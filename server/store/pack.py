@@ -80,6 +80,20 @@ def sample_pack(source: Path, target: Path, every: int) -> None:
         db.execute("VACUUM")
 
 
+def read_words(path: Path) -> list[Word]:
+    with closing(sqlite3.connect(path)) as db:
+        rows = db.execute("SELECT id, spellings, readings, glosses FROM words").fetchall()
+    return [
+        Word(
+            id,
+            tuple(json.loads(spellings)),
+            tuple(json.loads(readings)),
+            tuple(json.loads(glosses)),
+        )
+        for id, spellings, readings, glosses in rows
+    ]
+
+
 def read_pack(path: Path) -> Pack:
     with closing(sqlite3.connect(path)) as db:
         sources = [row[0] for row in db.execute("SELECT id FROM sources ORDER BY id")]
