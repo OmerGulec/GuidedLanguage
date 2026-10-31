@@ -13,6 +13,7 @@ from store.pack import write_pack
 ROOT = Path(__file__).resolve().parents[2]
 DATA = ROOT / "data"
 CONTENT = ROOT / "content" / "ja"
+PACK = DATA / "packs" / "ja" / "pack.sqlite"
 JMDICT_URL = "https://www.edrdg.org/pub/Nihongo/JMdict_e.gz"
 TATOEBA_URL = "https://downloads.tatoeba.org/exports/per_language/jpn/jpn_sentences.tsv.bz2"
 TATOEBA = Source("tatoeba", "Tatoeba", "CC BY 2.0 FR", "full")
@@ -61,10 +62,9 @@ def build() -> None:
         "analyser": "fugashi + unidic-lite",
         "dictionary": "JMdict_e",
     }
-    path = DATA / "packs" / "ja" / "pack.sqlite"
-    write_pack(path, meta, [TATOEBA], words.values(), passages.values(), occurrences)
+    write_pack(PACK, meta, [TATOEBA], words.values(), passages.values(), occurrences)
     report(words, unresolved, len(passages), occurrences)
-    print(f"written {path}")
+    print(f"written {PACK}")
 
 
 def report(

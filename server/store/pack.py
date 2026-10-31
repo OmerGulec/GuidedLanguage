@@ -1,9 +1,12 @@
 import json
 import sqlite3
 from collections.abc import Iterable, Mapping
+from contextlib import closing
 from pathlib import Path
 
-from core.pack import Occurrence, Passage, Source, Word
+import numpy as np
+
+from core.pack import Column, Occurrence, Pack, Passage, Source, Word
 
 SCHEMA = """
 CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
@@ -55,6 +58,35 @@ def write_pack(
             ((o.passage, o.item, o.spelling, o.phonetic, o.start, o.end) for o in occurrences),
         )
     db.close()
+
+
+def read_pack(path: Path) -> Pack:
+    with closing(sqlite3.connect(path)) as db:
+        sources = [row[0] for row in db.execute("SELECT id FROM sources ORDER BY id")]
+        passages = db.execute("SELECT id, source FROM passages ORDER BY rowid").fetchall()
+        appearances = db.execute(
+            "SELECT DISTINCT passage, item, CASE WHEN phonetic THEN NULL ELSE spelling END"
+            " FROM occurrences"
+        ).fetchall()
+
+    source_index = {source: i for i, source in enumerate(sources)}
+    passage_index = {passage: i for i, (passage, _) in enumerate(passages)}
+    column_index: dict[Column, int] = {}
+    appearance_columns = [
+        column_index.setdefault(Column(item, spelling), len(column_index))
+        for _, item, spelling in appearances
+    ]
+
+    return Pack(
+        passages=tuple(passage for passage, _ in passages),
+        sources=tuple(sources),
+        passage_sources=np.array([source_index[source] for _, source in passages], dtype=np.int32),
+        columns=tuple(column_index),
+        appearance_passages=np.array(
+            [passage_index[passage] for passage, _, _ in appearances], dtype=np.int32
+        ),
+        appearance_columns=np.array(appearance_columns, dtype=np.int32),
+    )
 
 
 def _json(values: tuple[str, ...]) -> str:
