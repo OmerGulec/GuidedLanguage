@@ -32,7 +32,7 @@ Status: accepted
 
 **Collisions.** Look-alikes are where knowing gets tested. Pairs come from shape (待/持), sound (期間/機関), meaning (暑い/熱い), grammar form (ている/てある) and the learner's own mistakes (a typed answer that is another known item). A new item is introduced next to the known items it most resembles. Once both items of a pair are known, a contrast card tests them together.
 
-**Spellings and readings.** A word is learned in its most common spelling and reading, counted in our library. Other spellings get their own card only when common enough to rank in the queue; rare ones are labelled as variants. Other readings are shown and accepted.
+**Spellings and readings.** A word is learned in its most common spelling and reading, counted in our library. Other spellings get their own card only when common enough to rank among the candidates (009); rare ones are labelled as variants. Other readings are shown and accepted.
 
 **Senses.** Tracked per word. Set phrases are their own items. Cards per sense come once occurrences carry senses.
 

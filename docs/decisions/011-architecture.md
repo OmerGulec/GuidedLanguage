@@ -14,7 +14,7 @@ content/ja/          lessons and comparison notes
 server/
   core/              domain, pure
   langs/ja/          analyser, model prompts, pack facts
-  pipeline/          sources → language pack
+  pipeline/          sources → pack
   store/             SQLite, one file per feature
   integrations/      anki/, renshuu/
   api/               FastAPI, one file per feature
