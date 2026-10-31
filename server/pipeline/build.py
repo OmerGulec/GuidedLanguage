@@ -10,9 +10,8 @@ from langs.ja.analyser import Analyser, Lexicon, read_readings, word
 from langs.ja.checks import check_links
 from langs.ja.dictionary import read_jmdict
 from store.pack import write_pack
-from store.paths import DATA, PACK, ROOT
+from store.paths import CONTENT, DATA, PACK
 
-CONTENT = ROOT / "content" / "ja"
 JMDICT_URL = "https://www.edrdg.org/pub/Nihongo/JMdict_e.gz"
 TATOEBA_URL = "https://downloads.tatoeba.org/exports/per_language/jpn/jpn_sentences.tsv.bz2"
 TATOEBA = Source("tatoeba", "Tatoeba", "CC BY 2.0 FR", "full")

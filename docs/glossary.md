@@ -19,6 +19,9 @@ One name per concept. Code, comments and documents use these and no synonyms.
 | Formation | The skill of building or undoing a form. |
 | Pattern | A form made of parts, such as てもいい. |
 | Chunk | A pattern known before its parts are. |
+| Form page | A form's lesson page: the idea its uses share. A file with a header like an item's, but not an item. |
+| Lesson header | The TOML header of an item's lesson file (010); together the headers are the grammar graph. |
+| Seed order | The hand-ordered list of grammar items that the computed order is checked against (009). |
 | Explanation step | The short "why it means this" shown once a chunk's parts are known. |
 | Source | Where passages come from, with license and display policy. |
 | Passage | A short self-contained text, identified by a hash of source and normalised text. |
