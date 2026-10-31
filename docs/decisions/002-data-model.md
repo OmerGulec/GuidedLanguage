@@ -2,21 +2,10 @@
 
 Status: accepted
 
-| Concept | Meaning |
-|---|---|
-| Item | Something a learner can know: word, set phrase, grammar pattern, kanji, kana. A word is one dictionary entry, not a string. |
-| Facet | One side of an item: spelling, reading, meaning, audio, pitch. Declared per language and item kind. |
-| Card | An item, a prompt facet and a set of answer facets, e.g. 分かる → {reading, meaning}. One memory state per card. |
-| Source | Where passages come from: work or site, author, genre, license, display policy. |
-| Passage | A short self-contained text, paragraph-sized, with its position in the source. |
-| Occurrence | Item X appears in passage P at span S, in spelling W. Spans may overlap. May later carry a sense. |
-| Event | Something happened: review, lookup, passage read, manual mark. Append-only, tagged with origin (ours, Anki, …) and answer method. |
-| State | Derived from events. Never the source of truth. |
+The concepts are defined in `docs/glossary.md`. This record holds the rules about them.
 
-Rules:
-
-- A passage's coverage is its expected number of unknown items (013). Nuance items never count (007).
-- An occurrence depends on its spelling → meaning card. For a spelling that writes the sound directly (Japanese kana), any card linking the word's sound and meaning will do: any spelling → {reading, meaning}, audio → meaning, or kana → meaning. Knowing what a spelling means does not imply knowing how it sounds.
-- Only recall updates memory. Multiple choice, reading and lookups are events, never grades.
-- State distinguishes *known as a chunk* from *understood*, so items can be met before they are explained.
+- A word is one dictionary entry, not a string. An occurrence records the spelling it uses.
+- A kanji spelling is understood only through its own card. A spelling that writes the sound directly (Japanese kana) is understood through any card linking the word's sound and meaning. Knowing what a spelling means does not imply knowing how it sounds. The computation is in 013.
+- A learner's history is events only; everything else is derived (013).
+- State distinguishes *known as a chunk* from *understood*, so items can be met before they are explained (013).
 - Core code never imports language-specific code.

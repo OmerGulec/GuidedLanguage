@@ -10,11 +10,11 @@ Status: accepted
 
 **Systems once, members as items.** A system is explained once, early and small: verb classes, kana rows and sound changes; the こそあど grid; counters; giving and receiving. Its members then arrive as ordinary items; endings arrive as "one more ending on a stem you know".
 
-**Order.** A form comes after what it is derived from: plain before polite, だ before です. Within that, a building block is ranked together with the cheapest thing that depends on it.
+**Order.** A form comes after what it is derived from: plain before polite, だ before です. The rest of ordering is in 009.
 
 **Patterns.** A pattern lists its parts as uses, with an author's note on how much they explain the meaning. When the last part is learned, the pattern gets a short "why it means this" step, keeps its review history, and its variants (なくてもいい) become cheap to learn. When a part is taught, its lesson shows the patterns the learner already knows that contain it. Authors can override this for parts never taught alone.
 
-**Nuance.** A use can be flagged as nuance (sentence-final ね, politeness level). Nuance items don't stop a passage from counting as understood.
+**Nuance.** A use can be flagged as nuance (sentence-final ね, politeness level). Nuance items never add to coverage.
 
 **Contractions.** ちゃう, なきゃ and similar are spelling variants of their full forms.
 

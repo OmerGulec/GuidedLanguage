@@ -14,4 +14,4 @@ Status: accepted
 4. A second model checks correctness against the sources. Disagreements stay flagged until someone qualified reviews them.
 5. The owner checks clarity and approves.
 
-**Files.** One file per item, next to its comparison note, with a header holding id, form, use, parts, prerequisites, nuance flag and key. The headers are the authored graph (009).
+**Files.** One file per item, next to its comparison note, with a header holding id, kind (form, use, pattern, formation or system), parts, prerequisites, nuance flag and key. The headers are the authored graph (009).

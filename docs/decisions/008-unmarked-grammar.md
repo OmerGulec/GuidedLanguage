@@ -4,7 +4,7 @@ Status: accepted
 
 **Clauses that modify nouns** are one form (007), with uses split by the noun's role inside the clause: subject or object (昨日友達が買った本), another role such as place or reason (彼が育った町), or no missing role (魚を焼く匂い, 〜という噂). の as subject inside the clause (友達の買った本) is its own use. Card key point: the noun's role and where the clause starts.
 
-**Length and nesting** rank passages by difficulty; they never decide whether a passage is readable. One system lesson teaches how to unpack long modifiers and why to read to the end (〜わけではない reverses everything before it).
+**Length and nesting** rank passages by difficulty; they never add to coverage. One system lesson teaches how to unpack long modifiers and why to read to the end (〜わけではない reverses everything before it).
 
 **Who does what.** Dropped subjects and carried topics are not items; their visible clues are, and those lessons say "this tells you who":
 
