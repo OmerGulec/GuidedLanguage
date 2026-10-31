@@ -8,7 +8,7 @@ Status: accepted
 
 **Platform.** Web app, online only, desktop and phone. The server analyses text, schedules reviews, syncs progress and serves the library.
 
-**Integrations.** Import and export in both directions. Anki, Renshuu and similar are sources of history, not rivals to shut out. Imports bring review history, not just word lists.
+**Integrations.** Import and export in both directions. Anki, Renshuu and similar are sources of history, not rivals to shut out. Imports bring review history, not just word lists. First: one-time migration. Later: living side by side, where an external app keeps scheduling some cards and its reviews arrive as events. The design must not block the second.
 
 **Content.** We supply the text. Every source carries a license and a display policy: full, excerpt + link, or analysis only. User-supplied text is an extra.
 
