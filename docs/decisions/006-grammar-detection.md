@@ -10,6 +10,6 @@ Status: accepted
 
 **Display.** The reader names a use only when confident; otherwise it lists the possible uses the learner has been taught.
 
-**Measurement.** A test set of real sentences, about 50 per use, drawn from several kinds of writing and labelled by someone who can judge Japanese grammar. Per use, it measures how often a named use is right and how many instances are caught, and it calibrates the model's confidence. It stays as a permanent check on every pipeline change. The final measure is how often an error flips a passage between readable and not.
+**Measurement.** A test set of real sentences, about 50 per use, drawn from several kinds of writing. Two different models label it; where they agree the label stands, where they disagree the sentence counts as unsure until someone who can judge Japanese grammar reviews it. Until then, measured accuracy is optimistic, since both models can be wrong together. Per use, it measures how often a named use is right and how many instances are caught, and it calibrates the model's confidence. It stays as a permanent check on every pipeline change. The final measure is how often an error flips a passage between readable and not.
 
 **Corrections.** "I didn't get this" in the reader feeds a correction list that overrides the pipeline.
