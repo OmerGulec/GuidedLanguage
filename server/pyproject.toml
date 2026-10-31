@@ -6,6 +6,7 @@ dependencies = [
     "fsrs>=6.3.2",
     "fugashi>=1.5.2",
     "numpy>=2.5.4",
+    "pydantic>=2.14.2",
     "unidic-lite>=1.0.8",
 ]
 

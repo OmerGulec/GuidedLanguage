@@ -68,7 +68,7 @@ def plan(
         modalities.append("listening")
 
     return Plan(
-        reviews=_reviews(state, ranking, situation, settings, now),
+        reviews=_reviews(state, ranking, goal, situation, settings, now),
         reteach=tuple(reteach),
         new=tuple(new),
         passages={m: _passages(unknowns[m], pack, state.read[m], settings) for m in modalities},
@@ -83,7 +83,12 @@ def _possible(card: str, situation: Situation) -> bool:
 
 
 def _reviews(
-    state: State, ranking: Ranking, situation: Situation, settings: Settings, now: datetime
+    state: State,
+    ranking: Ranking,
+    goal: Goal,
+    situation: Situation,
+    settings: Settings,
+    now: datetime,
 ) -> tuple[str, ...]:
     today = study_day(now, settings)
     end_of_day = next_boundary(now, settings)
@@ -109,7 +114,12 @@ def _reviews(
     due: list[tuple[bool, int, str]] = []
     for card_id, held in state.cards.items():
         card = Card.parse(card_id)
-        if held.suspended or not _possible(card_id, situation):
+        # Cards outside the goal, such as imported ones, are kept but not reviewed (013).
+        if (
+            held.suspended
+            or goal not in RUNGS[card.rung].goals
+            or not _possible(card_id, situation)
+        ):
             continue
         made_due = card.rung in FIRST_RUNGS and any(
             state.made_due.get(item, date.max) <= today for item in card.items

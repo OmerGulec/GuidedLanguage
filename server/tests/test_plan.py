@@ -85,6 +85,14 @@ def test_cards_are_reviewed_when_due_and_not_before() -> None:
     assert RECOGNIZE in planned(history, due_day).reviews
 
 
+def test_cards_outside_the_goal_are_kept_but_not_reviewed() -> None:
+    cloze = Card((WAKARU,), None, "cloze").id
+    history = [*learned(RECOGNIZE), review(cloze, 1), review(cloze, 2)]
+    reviews = planned(history, 30).reviews
+    assert RECOGNIZE in reviews
+    assert cloze not in reviews
+
+
 def test_without_sound_listening_cards_wait_and_only_reading_is_offered() -> None:
     history = [*learned(RECOGNIZE), review(LISTEN, 2, hour=10)]
     later = 30

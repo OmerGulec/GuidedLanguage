@@ -15,7 +15,8 @@ class Introduced:
 class Reviewed:
     card: str
     passed: bool
-    method: Literal["self", "typed", "choice"]
+    # "import": answered in another app, which did not record how.
+    method: Literal["self", "typed", "choice", "import"]
     answer: str | None = None
 
 

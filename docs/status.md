@@ -8,6 +8,7 @@ Where things stand, for whoever picks up the work next. Decisions are in `docs/d
 - **Core** (`server/core/`): events, memory via FSRS (`fsrs` 6.3.2), state derived from events, card values, unknowns per passage, ranking and candidates, the daily plan.
 - **Simulator** (`server/sim/`): seeded learners against the real plan; named learners day zero, importer, three months, heavy user.
 - **Word-list importer** (`server/integrations/wordlist.py`).
+- **Renshuu importer** (`server/integrations/renshuu.py`): fetches the learner's full answer history through Renshuu's API and replays it as Introduced and Reviewed events (013). Per card and day one review, failed if any answer that day was wrong. Kanji > Kana and Kanji > Meaning feed recognize in the kanji spelling; Kana > Meaning recognize in kana; Listening listen; Accent pitch; Meaning > Kana and Meaning > Kanji cloze; Kana > Kanji and Writing nothing. Reviews of rungs outside the goal are kept and not scheduled.
 - Not yet: grammar, API, user database, web app.
 
 ## Running
@@ -19,23 +20,27 @@ From `server/`:
 - `uv run python -m pipeline.coverage`: coverage by number of words known.
 - `uv run python -m sim.report`: six months of simulated workload, about 4 min.
 - `uv run python -m integrations.wordlist FILE`: imports `word/reading` or `word<TAB>reading` lines, prints coverage and the next words to learn.
+- `uv run python -m integrations.renshuu fetch` saves the owner's Renshuu history to `data/renshuu/` (about 30 calls of the 2,000 a day allowed; needs `api.renshuu.org` allowed and the read-only key in the environment variable `read_only_renshuu`). `... renshuu report` replays it and prints coverage.
 
 ## Findings
 
 - Tatoeba, words only: the 1,000 most frequent words fully cover 31% of sentences and leave one unknown in another 35%; 5,000 words give 68% and 23%. Ranking by text unlocked barely beats frequency, so the queue ranks by frequency (009).
 - Simulated workload: 10 new words a day settles at about 100 reviews a day, 8% failed. A Listener at 15 words a day reaches about 260 and overruns the 200 cap.
 - The owner's Renshuu export, 1,437 words: 1,410 matched, 27 guessed, 0 missing; 21.2% of passages fully known, 34.6% with one unknown. The words still missing are mostly grammar the analyser links as words (様 for よう, 下さる for ください, 仕舞う for てしまう, 就く for について) and counters (箇 in 一つ, 度 in 一度). The export is not in the repo; ask the owner to upload it again.
+- The owner's full Renshuu history (fetched 31 October 2026): 1,437 words, all matched by JMdict number (four する verbs through their noun); 27,423 review days since June 2024, last on 5 May 2026; 3,247 cards: 1,755 recognize, 1,401 cloze, 91 listen. Six months on, 2,558 cards are due and half the recognize cards are below 70% recall, so 10.1% of passages are fully known and 29.6% have one unknown, against 21.2% and 34.6% when every listed word counted as known.
 - Linking rules found the hard way: lemma before written forms (いる not 射る), a readings table (私 read わたし), kana words by written reading first (いい → JMdict いい), potential verbs fall back to the verb (会えた → 会う). A run of words JMdict lists as one word is one word (お茶, 日本語, 泣き出す), longest first, matched by spelling because sounds change where words join (日曜日); except set phrases (JMdict `exp`, left to the model pass) and counters, which stay with their number.
 
 ## Next
 
 1. Design. Direction under review: a program built from the materials of a printed technical manual (the owner's references: 1970s US Navy training manuals, an oscilloscope front panel, *A Dictionary of Basic Japanese Grammar*). Type: a Century Schoolbook-style serif (TeX Gyre Schola) for everything in the interface, labels in its true small caps; Mincho for Japanese; draughting lettering (osifont) only inside drawings (chart axes, dimension lines, keys). Uppercase letter-spaced sans labels read as machine-made. Structure is software, not a page: the object being worked on is largest, details beside it (a bottom sheet on phones), one primary action per screen as a black key with a white inset line, secondary actions as small-caps links. Keyboard hints only where a keyboard is in use. Today is the day's work as numbered steps with amounts and progress, not separate number tiles. Separation by space and type, not lines: rules only for the heavy title band (on Review it is the progress bar), tables and notices. Lessons alone keep the page form, with key-sentence tables after the grammar dictionary; on phones those tables turn to one row per part. Text only for news; anything seen twice belongs in a fixed place. Text reads like a legal notice: plain and complete. Black ink; one spot colour only for unknown words and ○/× marks. Rejected: dashboard looks (number tiles, modern grotesques), manual cosplay (captions on everything, prose for data), paper textures, divider lines everywhere. Mockups on the owner's private canvas https://claude.ai/artifact/7R6Yo7NbUwATNX2XHguPyE (rows D and phone current). Accepted by the owner as an initial sketch; the look will change, so every visual choice must live in tokens and a few primitives, never in screens. Next: tokens and primitives.
-2. Full-history importers: the owner's words live in Renshuu (API), Anki review logs later.
-3. Grammar (006 to 010): items, lessons, the model pass over the library. The model pass costs money and needs the owner's go-ahead.
-4. API, user database, web app (011).
+2. Grammar (006 to 010): items, lessons, the model pass over the library. The model pass costs money and needs the owner's go-ahead.
+3. API, user database, web app (011).
+4. Anki review logs, when someone needs them.
 
 ## Open
 
+- Renshuu does not record how an answer was given; multiple choice counts as recall in the import. Kanji (10) and grammar (25) are fetched but not imported until those items exist.
+- A learner back from a break: the owner would return to 2,558 due cards. The cap and frequency order handle it, at 200 a day for about two weeks; it may deserve a design of its own.
 - Button type: the owner finds the small-caps serif on keys "a bit ridiculous"; revisit once tokens exist.
 - Source cap (009): undefined until a second source arrives. As a count it would flatten the top of the ranking, so probably a share.
 - Golden outputs per named learner (012) wait until plan behaviour settles; invariants are tested meanwhile.
