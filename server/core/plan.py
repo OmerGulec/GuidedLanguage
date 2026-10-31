@@ -1,3 +1,4 @@
+from collections import Counter
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
@@ -43,10 +44,24 @@ def plan(
     suspended = (Card.parse(card).items for card, held in state.cards.items() if held.suspended)
     reteach = sorted({item for items in suspended for item in items})
 
+    # New items spend the new budget; rungs that unlocked get an equal allowance of their own,
+    # so a goal with more rungs adds cards without slowing the pace of new words.
     today = study_day(now, settings)
-    started_today = sum(held.learned == today for held in state.cards.values())
-    budget = max(0, settings.new_budget - started_today - len(reteach))
-    new = [card for card in candidates(state, ranking, goal) if _possible(card, situation)]
+    started = Counter(
+        Card.parse(card).rung in FIRST_RUNGS
+        for card, held in state.cards.items()
+        if held.learned == today
+    )
+    allowance = {
+        True: max(0, settings.new_budget - started[True] - len(reteach)),
+        False: max(0, settings.new_budget - started[False]),
+    }
+    new: list[str] = []
+    for card in candidates(state, ranking, goal):
+        first = Card.parse(card).rung in FIRST_RUNGS
+        if allowance[first] > 0 and _possible(card, situation):
+            new.append(card)
+            allowance[first] -= 1
 
     modalities: list[Modality] = ["reading"]
     if goal in LISTENING_GOALS and situation.sound:
@@ -55,7 +70,7 @@ def plan(
     return Plan(
         reviews=_reviews(state, ranking, situation, settings, now),
         reteach=tuple(reteach),
-        new=tuple(new[:budget]),
+        new=tuple(new),
         passages={m: _passages(unknowns[m], pack, state.read[m], settings) for m in modalities},
     )
 

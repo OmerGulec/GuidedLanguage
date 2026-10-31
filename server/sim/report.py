@@ -29,7 +29,7 @@ def report() -> None:
     ]
 
     for learner, learner_settings in learners:
-        print(f"\n{learner.name}: goal {learner.goal}, {learner_settings.new_budget} new a day")
+        print(f"\n{learner.name}: {learner.goal}, {learner_settings.new_budget} new words a day")
         print("month  reviews/day  busiest day  failed  cards  fully known  one unknown")
         simulation = Simulation(learner, pack, pack_ranking, learner_settings, START)
         for month in range(1, MONTHS + 1):

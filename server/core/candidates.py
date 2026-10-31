@@ -77,6 +77,8 @@ def _held(state: State) -> dict[str, dict[str, CardState]]:
 def _next_rung(
     item: str, rungs: tuple[Rung, ...], held: Mapping[str, CardState], marked_known: bool
 ) -> str | None:
+    if any(card.suspended for card in held.values()):
+        return None
     first = held.get(rungs[0].name)
     graduated = marked_known if first is None else first.graduated
     for rung in rungs[1:]:

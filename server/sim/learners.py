@@ -12,7 +12,7 @@ START = date(2026, 1, 1)
 IMPORTED_WORDS = 1000
 IMPORT_POOL = 2000
 THREE_MONTHS = 90
-HEAVY_NEW_BUDGET = 20
+HEAVY_NEW_BUDGET = 15
 
 
 def day_zero(pack: Pack, ranking: Ranking, settings: Settings) -> Simulation:

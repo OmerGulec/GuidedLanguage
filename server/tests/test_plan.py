@@ -106,6 +106,15 @@ def test_suspended_items_are_retaught_first_out_of_the_new_budget() -> None:
     assert len(today.new) == 1
 
 
+def test_unlocked_rungs_get_their_own_allowance_beside_the_new_items() -> None:
+    settings = replace(TOKYO, new_budget=1)
+    history = learned(RECOGNIZE)
+    assert planned(history, 3, settings).new == (LISTEN, KOTO_RECOGNIZE)
+
+    history.append(review(LISTEN, 3, hour=10))
+    assert planned(history, 3, settings).new == (KOTO_RECOGNIZE,)
+
+
 def test_past_the_review_cap_the_most_frequent_items_come_first() -> None:
     history = [*learned(RECOGNIZE), *learned(KOTO_RECOGNIZE, KOTO)]
     assert planned(history, 60, replace(TOKYO, review_cap=1)).reviews == (RECOGNIZE,)

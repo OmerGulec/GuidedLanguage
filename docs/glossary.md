@@ -40,7 +40,7 @@ One name per concept. Code, comments and documents use these and no synonyms.
 | Coverage | The share of the library a learner can read, shown as progress; derived from unknowns. |
 | Memory | What the scheduler knows about a card: stability, difficulty, phase, due and last review. |
 | Mastery | A card's stability: how long its memory lasts without review. |
-| New budget | Slots per day for new cards: first cards of new items, unlocked rungs, contrast cards and re-teaching. |
+| New budget | New items per day, re-teaching included. Unlocked rungs get an equal allowance of their own. |
 | Pack | The read-only build of one language's library and items. |
 | Ranking | Each item's frequency and most common spelling, computed once from a pack. |
 | Plan | What a learner does on one study day: reviews, re-teaching, new cards and passages. |

@@ -14,7 +14,7 @@ All ranking lives here.
 
 **Building blocks** (formations, systems) take the rank of their highest-ranked dependent.
 
-**Filling the day.** Explanation steps and re-teaching first, then candidates in rank order until the new budget is spent. Each candidate takes one slot. Grammar uses, formations and systems share a grammar cap; kanji and kanji readings a kanji cap.
+**Filling the day.** Explanation steps and re-teaching first, then candidates in rank order. A new item takes a slot from the new budget; a rung that unlocked takes a slot from an equal allowance of its own, so a goal with more rungs adds cards without slowing the pace of new words. Grammar uses, formations and systems share a grammar cap; kanji and kanji readings a kanji cap.
 
 **Overdue reviews** beyond the review cap: cards of the most frequent items first.
 
