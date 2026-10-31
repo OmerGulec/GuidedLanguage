@@ -51,6 +51,7 @@ def test_reading_separates_words_that_share_a_spelling(lexicon: Lexicon) -> None
             lemma="私",
             base="私",
             reading=reading,
+            written_reading=reading,
             part_of_speech="代名詞",
             start=0,
             end=1,

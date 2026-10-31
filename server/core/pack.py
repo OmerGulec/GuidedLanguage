@@ -25,6 +25,7 @@ class Word:
     spellings: tuple[str, ...]
     readings: tuple[str, ...]
     glosses: tuple[str, ...]
+    common: bool
 
 
 @dataclass(frozen=True, slots=True)

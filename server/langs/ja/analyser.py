@@ -33,6 +33,7 @@ class _Features(Protocol):
     pos2: str
     lemma: str | None
     lForm: str | None  # noqa: N815
+    kanaBase: str | None  # noqa: N815
     orthBase: str | None  # noqa: N815
 
 
@@ -47,7 +48,10 @@ class Token:
     surface: str
     lemma: str
     base: str
+    # The dictionary form's reading, and the reading of the dictionary form as written here.
+    # They differ for a potential verb (会える under 会う) or a variant reading (いい under 良い).
     reading: str
+    written_reading: str
     part_of_speech: str
     start: int
     end: int
@@ -61,7 +65,7 @@ class Link:
 
 
 def word(entry: Entry) -> Word:
-    return Word(f"w:{entry.id}", entry.spellings, entry.readings, entry.glosses)
+    return Word(f"w:{entry.id}", entry.spellings, entry.readings, entry.glosses, entry.common)
 
 
 _KATAKANA_TO_HIRAGANA = ord("ア") - ord("あ")
@@ -98,6 +102,7 @@ class Analyser:
                 lemma=lemma,
                 base=f.orthBase or node.surface,
                 reading=hiragana(f.lForm or node.surface),
+                written_reading=hiragana(f.kanaBase or node.surface),
                 part_of_speech=f.pos1,
                 start=start,
                 end=position,
@@ -116,23 +121,28 @@ class Lexicon:
             for form in {*entry.spellings, *map(hiragana, entry.readings)}:
                 self._by_form[form].append(entry)
 
-    def reading(self, token: Token) -> str:
-        return self._readings.get((token.lemma, token.reading), token.reading)
+    def readings(self, token: Token) -> tuple[str, ...]:
+        """A word written in kana is matched by how it is written first, then by its lemma."""
+        lemma_reading = self._readings.get((token.lemma, token.reading), token.reading)
+        if is_kana(token.surface) and token.written_reading != lemma_reading:
+            return (token.written_reading, lemma_reading)
+        return (lemma_reading,)
 
     def entry(self, token: Token) -> Entry | None:
-        reading = self.reading(token)
         # The lemma (居る for いる, 事 for こと) is the analyser's strongest evidence. Matching kana
         # forms first would pick whichever entry shares the reading and has the lowest id.
-        for forms in ((token.lemma,), (token.base, token.surface)):
-            found = {e.id: e for f in forms for e in self._by_form.get(hiragana(f), ())}.values()
-            heard = [e for e in found if reading in map(hiragana, e.readings)]
-            if heard:
-                prefixes = WORD_PARTS_OF_SPEECH[token.part_of_speech]
-                fitting = [
-                    e for e in heard if any(p.startswith(prefixes) for p in e.parts_of_speech)
-                ]
-                return min(fitting or heard, key=lambda e: (not e.common, e.id))
+        for reading in self.readings(token):
+            for forms in ((token.lemma,), (token.base, token.surface)):
+                found = {e.id: e for f in forms for e in self._by_form.get(hiragana(f), ())}
+                heard = [e for e in found.values() if reading in map(hiragana, e.readings)]
+                if heard:
+                    return self._best(heard, token)
         return None
+
+    def _best(self, entries: list[Entry], token: Token) -> Entry:
+        prefixes = WORD_PARTS_OF_SPEECH[token.part_of_speech]
+        fitting = [e for e in entries if any(p.startswith(prefixes) for p in e.parts_of_speech)]
+        return min(fitting or entries, key=lambda e: (not e.common, e.id))
 
     def link(self, token: Token) -> Link:
         phonetic = is_kana(token.surface)
@@ -140,11 +150,12 @@ class Lexicon:
         if entry is None:
             return Link(self.unresolved(token).id, token.base, phonetic)
         if phonetic:
-            reading = self.reading(token)
-            spelling = next((r for r in entry.readings if hiragana(r) == reading), token.base)
+            readings = self.readings(token)
+            spelling = next((r for r in entry.readings if hiragana(r) in readings), token.base)
         else:
             spelling = token.base if token.base in entry.spellings else token.lemma
         return Link(word(entry).id, spelling, phonetic)
 
     def unresolved(self, token: Token) -> Word:
-        return Word(f"u:{token.lemma}/{token.reading}", (token.base,), (token.reading,), ())
+        item = f"u:{token.lemma}/{token.reading}"
+        return Word(item, (token.base,), (token.reading,), glosses=(), common=False)

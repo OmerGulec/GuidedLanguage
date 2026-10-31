@@ -14,7 +14,8 @@ CREATE TABLE sources (
     id TEXT PRIMARY KEY, name TEXT NOT NULL, license TEXT NOT NULL, display TEXT NOT NULL
 );
 CREATE TABLE words (
-    id TEXT PRIMARY KEY, spellings TEXT NOT NULL, readings TEXT NOT NULL, glosses TEXT NOT NULL
+    id TEXT PRIMARY KEY, spellings TEXT NOT NULL, readings TEXT NOT NULL, glosses TEXT NOT NULL,
+    common INTEGER NOT NULL
 );
 CREATE TABLE passages (
     id TEXT PRIMARY KEY, source TEXT NOT NULL REFERENCES sources,
@@ -46,8 +47,11 @@ def write_pack(
             ((s.id, s.name, s.license, s.display) for s in sources),
         )
         db.executemany(
-            "INSERT INTO words VALUES (?, ?, ?, ?)",
-            ((w.id, _json(w.spellings), _json(w.readings), _json(w.glosses)) for w in words),
+            "INSERT INTO words VALUES (?, ?, ?, ?, ?)",
+            (
+                (w.id, _json(w.spellings), _json(w.readings), _json(w.glosses), w.common)
+                for w in words
+            ),
         )
         db.executemany(
             "INSERT INTO passages VALUES (?, ?, ?, ?)",
@@ -82,15 +86,16 @@ def sample_pack(source: Path, target: Path, every: int) -> None:
 
 def read_words(path: Path) -> list[Word]:
     with closing(sqlite3.connect(path)) as db:
-        rows = db.execute("SELECT id, spellings, readings, glosses FROM words").fetchall()
+        rows = db.execute("SELECT id, spellings, readings, glosses, common FROM words").fetchall()
     return [
         Word(
             id,
             tuple(json.loads(spellings)),
             tuple(json.loads(readings)),
             tuple(json.loads(glosses)),
+            bool(common),
         )
-        for id, spellings, readings, glosses in rows
+        for id, spellings, readings, glosses, common in rows
     ]
 
 

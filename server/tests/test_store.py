@@ -7,7 +7,7 @@ from store.pack import read_pack, write_pack
 def test_read_pack_merges_sound_spellings_and_keeps_kanji_spellings(tmp_path: Path) -> None:
     path = tmp_path / "pack.sqlite"
     source = Source("tatoeba", "Tatoeba", "CC BY 2.0 FR", "full")
-    word = Word("w:1", ("分かる",), ("わかる",), ("to understand",))
+    word = Word("w:1", ("分かる",), ("わかる",), ("to understand",), common=True)
     passages = [
         Passage("a", "tatoeba", 1, "わかった。ワカッタ。分かった。"),
         Passage("b", "tatoeba", 2, "。"),

@@ -7,19 +7,21 @@ from pathlib import Path
 
 import numpy as np
 
-from core.candidates import ranking
+from core.candidates import candidates, ranking
+from core.cards import Card
 from core.events import Event, Marked
 from core.pack import Word
 from core.settings import Settings
 from core.state import derive
 from core.unknowns import unknowns
 from core.values import values
-from langs.ja.analyser import hiragana
+from langs.ja.analyser import hiragana, is_kana
 from langs.ja.content import rows
 from store.pack import read_pack, read_words
 from store.paths import PACK
 
 SHOWN = 15
+SURU = "する"
 
 
 @dataclass(frozen=True, slots=True)
@@ -31,7 +33,15 @@ class Matches:
 
 
 def read_word_list(path: Path) -> list[tuple[str, str | None]]:
-    return [(row[0], row[1] if len(row) > 1 and row[1] else None) for row in rows(path)]
+    """One word per line, its reading optionally after a tab or a slash (Renshuu exports)."""
+    words: list[tuple[str, str | None]] = []
+    for row in rows(path):
+        if len(row) > 1:
+            spelling, reading = row[0], row[1]
+        else:
+            spelling, _, reading = row[0].partition("/")
+        words.append((spelling, reading or None))
+    return words
 
 
 def match(
@@ -39,24 +49,45 @@ def match(
 ) -> Matches:
     by_form: dict[str, list[Word]] = defaultdict(list)
     for word in words:
-        for form in {*word.spellings, *map(hiragana, word.readings)}:
+        for form in {*word.spellings, *word.readings, *map(hiragana, word.readings)}:
             by_form[form].append(word)
+
+    def candidates(spelling: str, reading: str | None) -> list[Word]:
+        found = {w.id: w for f in (spelling, hiragana(spelling)) for w in by_form.get(f, [])}
+        fitting = [
+            w
+            for w in found.values()
+            if reading is None or hiragana(reading) in map(hiragana, w.readings)
+        ]
+        # Katakana input should not land on a hiragana-only word that sounds the same.
+        exact = [w for w in fitting if spelling in (*w.spellings, *w.readings)]
+
+        def main_form(word: Word) -> bool:
+            first = (
+                word.readings[0] if is_kana(spelling) or not word.spellings else word.spellings[0]
+            )
+            return hiragana(first) == hiragana(spelling)
+
+        return sorted(
+            exact or fitting,
+            key=lambda w: (not main_form(w), not w.common, -frequency.get(w.id, 0), w.id),
+        )
 
     known: dict[str, str] = {}
     guessed: dict[str, tuple[str, ...]] = {}
     missing: list[str] = []
     for spelling, reading in wanted:
-        fitting = [
-            w
-            for w in by_form.get(spelling, []) + by_form.get(hiragana(spelling), [])
-            if reading is None or hiragana(reading) in map(hiragana, w.readings)
-        ]
-        ids = sorted({w.id for w in fitting}, key=lambda i: (-frequency.get(i, 0), i))
+        found = candidates(spelling, reading)
+        if not found and spelling.endswith(SURU) and spelling != SURU:
+            # Lists often add する to a noun; the dictionary files the word under the noun.
+            stem_reading = reading.removesuffix(SURU) if reading else None
+            found = candidates(spelling.removesuffix(SURU), stem_reading)
+
         line = spelling if reading is None else f"{spelling} ({reading})"
-        if len(ids) == 1:
-            known[line] = ids[0]
-        elif ids:
-            guessed[line] = tuple(ids)
+        if len(found) == 1:
+            known[line] = found[0].id
+        elif found:
+            guessed[line] = tuple(w.id for w in found)
         else:
             missing.append(line)
     return Matches(known, guessed, missing)
@@ -86,6 +117,10 @@ def report(path: Path) -> None:
     per_passage = unknowns(values(state, pack, settings, tomorrow, "reading"), pack)
     print(f"passages fully known: {np.mean(per_passage < 0.5):.1%}")
     print(f"passages with one unknown: {np.mean((per_passage >= 0.5) & (per_passage < 1.5)):.1%}")
+
+    next_words = candidates(state, pack_ranking, "reader")[:SHOWN]
+    print("most frequent words not yet known:")
+    print("  " + ", ".join(labels[Card.parse(card).items[0]] for card in next_words))
 
 
 if __name__ == "__main__":
