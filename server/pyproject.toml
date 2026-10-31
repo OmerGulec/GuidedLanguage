@@ -1,0 +1,35 @@
+[project]
+name = "guidedlanguage"
+version = "0.0.0"
+requires-python = ">=3.13"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "import-linter>=2.15",
+    "pyright>=1.1.414",
+    "pytest>=9.2.0",
+    "ruff>=0.17.3",
+]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF", "N", "ANN"]
+
+[tool.pyright]
+typeCheckingMode = "strict"
+pythonVersion = "3.13"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.importlinter]
+root_packages = ["core", "langs", "store", "pipeline", "integrations", "api"]
+
+[[tool.importlinter.contracts]]
+name = "Layers (011)"
+type = "layers"
+layers = ["api | pipeline | integrations", "langs | store", "core"]

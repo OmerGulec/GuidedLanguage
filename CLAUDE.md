@@ -2,6 +2,14 @@
 
 Decisions live in `docs/decisions/`. Read the ones your change touches before writing code.
 
+## Checks
+
+Run from `server/` before every commit:
+
+```
+uv run ruff check . && uv run ruff format --check . && uv run pyright && uv run lint-imports && uv run pytest
+```
+
 ## Code
 
 - Code explains itself. Names say what a thing is in the domain. No names or comments that refer to a conversation, a task, a ticket or anything else the reader would have to look up.
