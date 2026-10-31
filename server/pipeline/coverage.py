@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 
 import numpy as np
 
-from core.candidates import frequency, ranked
+from core.candidates import ranked, ranking
 from core.events import Event, Marked
 from core.settings import Settings
 from core.state import derive
@@ -19,7 +19,7 @@ MEASURED_AT = datetime(2026, 1, 2, tzinfo=UTC)
 def report() -> None:
     pack = read_pack(PACK)
     settings = Settings()
-    order = ranked(frequency(pack), excluded=frozenset())
+    order = ranked(ranking(pack).frequency, excluded=frozenset())
 
     print("words known  fully known  one unknown")
     for count in KNOWN_WORDS:

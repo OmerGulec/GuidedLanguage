@@ -16,3 +16,7 @@ class Settings:
     lapses_before_suspension: int = 8
     marked_stability_days: float = 60
     marked_spread_days: float = 60
+    new_budget: int = 10
+    review_cap: int = 200
+    reading_per_day: int = 3
+    spacing_days: int = 3

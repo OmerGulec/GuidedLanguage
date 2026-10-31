@@ -42,3 +42,5 @@ One name per concept. Code, comments and documents use these and no synonyms.
 | Mastery | A card's stability: how long its memory lasts without review. |
 | New budget | Slots per day for new cards: first cards of new items, unlocked rungs, contrast cards and re-teaching. |
 | Pack | The read-only build of one language's library and items. |
+| Ranking | Each item's frequency and most common spelling, computed once from a pack. |
+| Plan | What a learner does on one study day: reviews, re-teaching, new cards and passages. |

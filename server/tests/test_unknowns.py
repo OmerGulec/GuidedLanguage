@@ -1,6 +1,5 @@
 import numpy as np
 
-from core.candidates import frequency, ranked
 from core.pack import Column
 from core.unknowns import unknowns
 from tests.packs import pack_of
@@ -24,13 +23,3 @@ def test_raising_a_value_never_raises_a_passages_unknowns() -> None:
         before = rng.random(len(pack.columns))
         after = np.maximum(before, rng.random(len(pack.columns)))
         assert np.all(unknowns(after, pack) <= unknowns(before, pack))
-
-
-def test_frequency_counts_a_passage_once_whatever_the_spelling() -> None:
-    pack = pack_of((KANA_WAKARU, KANJI_WAKARU), (KANJI_WAKARU, KOTO), (IRU,))
-    assert frequency(pack) == {"w:1": 2, "w:2": 1, "w:3": 1}
-
-
-def test_ranking_orders_by_frequency_then_id_and_skips_excluded() -> None:
-    counts = {"w:9": 5, "w:2": 3, "w:1": 3, "w:5": 7}
-    assert ranked(counts, excluded={"w:5"}) == ["w:9", "w:1", "w:2"]

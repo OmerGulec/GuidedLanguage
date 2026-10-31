@@ -13,6 +13,7 @@ from core.events import (
     LookedUp,
     Marked,
     Missed,
+    Modality,
     Read,
     Retracted,
     Reviewed,
@@ -47,6 +48,7 @@ class State:
     cards: Mapping[str, CardState]
     # Items whose first rung a lookup, miss or failed exercise made due on a study day.
     made_due: Mapping[str, date]
+    read: Mapping[Modality, frozenset[str]]
 
 
 def derive(events: Iterable[Event], settings: Settings) -> State:
@@ -66,6 +68,7 @@ def derive(events: Iterable[Event], settings: Settings) -> State:
     marks: dict[str, Mark] = {}
     cards: dict[str, CardState] = {}
     made_due: dict[str, date] = {}
+    read: dict[Modality, set[str]] = {"reading": set(), "listening": set()}
 
     for event in history:
         day = study_day(event.at, settings)
@@ -92,12 +95,15 @@ def derive(events: Iterable[Event], settings: Settings) -> State:
                     marks.pop(item, None)
                 else:
                     marks[item] = Mark(status, event.at)
-            case Reviewed() | Exercised() | Read() | Retracted():
+            case Read(passage=passage, modality=modality):
+                read[modality].add(passage)
+            case Reviewed() | Exercised() | Retracted():
                 pass
             case _:
                 assert_never(event.payload)
 
-    return State(introduced, marks, cards, made_due)
+    passages_read: dict[Modality, frozenset[str]] = {m: frozenset(p) for m, p in read.items()}
+    return State(introduced, marks, cards, made_due, passages_read)
 
 
 def starting(item: str, mark: Mark, settings: Settings) -> CardState:
