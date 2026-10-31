@@ -38,7 +38,7 @@ Decisions live in `docs/decisions/`. Read the ones your change touches before wr
 |---|---|
 | Item | Something a learner can know: word, set phrase, grammar use, kanji, kana. |
 | Facet | One side of an item: spelling, reading, meaning, audio, pitch. |
-| Card | An item, a prompt facet and a set of answer facets. |
+| Card | A subject (item, sense or pair), a prompt facet and a set of answer facets. |
 | Form | An inflection, particle or multi-part pattern. |
 | Use | One function of a form. A grammar item is one form with one use. |
 | Formation | The skill of building or undoing a form. |
@@ -50,4 +50,5 @@ Decisions live in `docs/decisions/`. Read the ones your change touches before wr
 | Pack | The read-only build of one language's library and items. |
 | Goal | What a learner wants to be able to do; decides their cards. |
 | Situation | What is possible right now: sound, keyboard. |
-| Coverage | Which passages a learner understands. |
+| Coverage | A passage's expected number of unknown items, per modality. |
+| Mastery | A card's stability: how long its memory lasts without review. |

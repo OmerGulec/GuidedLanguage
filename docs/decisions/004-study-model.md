@@ -6,13 +6,13 @@ Status: accepted
 
 **Situation.** Sound and keyboard are remembered per device. Cards the situation rules out wait; they are not failed.
 
-**Stand-ins.** kana → meaning may stand in for audio → meaning while sound is off. A stand-in never counts toward the card it replaces and pushes that card back a few days. The backlog is capped and ordered by unlock value; the app shows when listening was last tested.
+**Stand-ins.** Later. A stand-in never counts toward the card it replaces. In v1, cards the situation rules out simply wait; a learner who always reviews without sound picks kana → meaning as an ordinary card in custom goals.
 
 **A new word.**
 
 1. Met in a sentence where it is the only unknown, with audio.
 2. Same-session repeats on the easiest card in the user's goals.
-3. Harder cards unlock once easier ones hold, and spend the same daily budget as new words.
+3. Harder cards unlock once easier ones are on schedule (013), and spend the same daily budget as new words.
 4. After any review of a word, its other cards wait a few days.
 
 **Prompts.**

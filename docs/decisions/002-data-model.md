@@ -15,8 +15,8 @@ Status: accepted
 
 Rules:
 
-- A passage is understood only when every occurrence in it is understood, except items flagged as nuance (007).
-- An occurrence is understood when its spelling → meaning is known. For a spelling that writes the sound directly (Japanese kana), knowing the word's sound is enough: any spelling → {reading, meaning}, audio → meaning, or kana → meaning. Knowing what a spelling means does not imply knowing how it sounds.
+- A passage's coverage is its expected number of unknown items (013). Nuance items never count (007).
+- An occurrence depends on its spelling → meaning card. For a spelling that writes the sound directly (Japanese kana), any card linking the word's sound and meaning will do: any spelling → {reading, meaning}, audio → meaning, or kana → meaning. Knowing what a spelling means does not imply knowing how it sounds.
 - Only recall updates memory. Multiple choice, reading and lookups are events, never grades.
 - State distinguishes *known as a chunk* from *understood*, so items can be met before they are explained.
 - Core code never imports language-specific code.

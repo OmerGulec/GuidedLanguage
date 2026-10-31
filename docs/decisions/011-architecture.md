@@ -4,7 +4,7 @@ Status: accepted
 
 **Two halves.** An offline pipeline builds a *language pack*: a folder with one read-only SQLite file (items, passages, occurrences, translations, language facts such as which spellings write the sound) and the coverage matrices as `.npy` files the server memory-maps. The server loads a pack and keeps users' data in a separate SQLite database. Everything a user sees is derived from the pack and the user's events.
 
-**Stable IDs.** Words are JMdict entry numbers; kanji and kana their characters; grammar items authored IDs. Cards are `item/prompt/answers`. Passages are a hash of source and normalised text. Events carry the item ID plus surface form and context, never offsets alone. A lesson header's `replaces:` and the pack's `id_map` say where history goes when an item is split, merged or renamed. The server refuses a pack in which any ID referenced by an event fails to resolve.
+**Stable IDs.** Words are JMdict entry numbers; kanji and kana their characters; grammar items authored IDs. Cards are `subject/prompt/answers`, the subject being an item, a sense or a pair (013). Passages are a hash of source and normalised text. Events carry the item ID plus surface form and context, never offsets alone. A lesson header's `replaces:` and the pack's `id_map` say where history goes when an item is split, merged or renamed. The server refuses a pack in which any ID referenced by an event fails to resolve.
 
 **Pure core, thin shell.** `core/` is pure functions over frozen dataclasses: no I/O, no clock (`now`, timezone and day boundary are inputs), no language-specific code. Only the shell touches disk, network and time. Core is designed by hand, one change at a time, with the owner's approval; agents don't grow it.
 
