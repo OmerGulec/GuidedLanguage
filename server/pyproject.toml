@@ -3,6 +3,7 @@ name = "guidedlanguage"
 version = "0.0.0"
 requires-python = ">=3.13"
 dependencies = [
+    "fsrs>=6.3.2",
     "fugashi>=1.5.2",
     "numpy>=2.5.4",
     "unidic-lite>=1.0.8",

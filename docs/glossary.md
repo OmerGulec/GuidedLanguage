@@ -38,6 +38,7 @@ One name per concept. Code, comments and documents use these and no synonyms.
 | Value | How well a card is held at an instant, from 0 to 1 (013). |
 | Unknowns | A passage's expected number of unknown items, per modality (013). |
 | Coverage | The share of the library a learner can read, shown as progress; derived from unknowns. |
+| Memory | What the scheduler knows about a card: stability, difficulty, phase, due and last review. |
 | Mastery | A card's stability: how long its memory lasts without review. |
 | New budget | Slots per day for new cards: first cards of new items, unlocked rungs, contrast cards and re-teaching. |
 | Pack | The read-only build of one language's library and items. |
