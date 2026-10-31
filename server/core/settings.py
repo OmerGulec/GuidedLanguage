@@ -14,3 +14,5 @@ class Settings:
     retention: float = 0.9
     scheduler_parameters: tuple[float, ...] = FSRS_PARAMETERS
     lapses_before_suspension: int = 8
+    marked_stability_days: float = 60
+    marked_spread_days: float = 60

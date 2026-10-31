@@ -1,8 +1,10 @@
+import hashlib
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, replace
 from datetime import date, datetime, timedelta
 from typing import Literal, assert_never
 
+from core.cards import FIRST_RUNGS, Card
 from core.days import study_day
 from core.events import (
     Event,
@@ -17,6 +19,9 @@ from core.events import (
 )
 from core.memory import Memory, review
 from core.settings import Settings
+
+# Midway on the scheduler's 1 to 10 difficulty scale, for memories that never had a review.
+STARTING_DIFFICULTY = 5.0
 
 
 @dataclass(frozen=True, slots=True)
@@ -44,11 +49,6 @@ class State:
     made_due: Mapping[str, date]
 
 
-def items_of(card: str) -> tuple[str, ...]:
-    subject = card.rsplit("/", 1)[0]
-    return tuple(part.split("@")[0] for part in subject.split("+"))
-
-
 def derive(events: Iterable[Event], settings: Settings) -> State:
     unique = {event.id: event for event in events}
     retracted: set[str] = set()
@@ -74,12 +74,13 @@ def derive(events: Iterable[Event], settings: Settings) -> State:
                 introduced.setdefault(item, event.at)
                 if reason == "reteach":
                     for card, state in cards.items():
-                        if item in items_of(card):
+                        if item in Card.parse(card).items:
                             cards[card] = replace(state, lapses=0, suspended=False)
                     made_due[item] = day
             case Reviewed(card=card, passed=passed, method=method) if method != "choice":
-                cards[card] = _reviewed(cards.get(card), passed, event.at, settings)
-                for item in items_of(card):
+                previous = cards.get(card) or _marked_start(card, marks, settings)
+                cards[card] = _reviewed(previous, passed, event.at, settings)
+                for item in Card.parse(card).items:
                     made_due.pop(item, None)
             case LookedUp(item=item) | Missed(item=item):
                 made_due[item] = day + timedelta(days=1)
@@ -97,6 +98,34 @@ def derive(events: Iterable[Event], settings: Settings) -> State:
                 assert_never(event.payload)
 
     return State(introduced, marks, cards, made_due)
+
+
+def starting(item: str, mark: Mark, settings: Settings) -> CardState:
+    """The memory of a first rung whose item was marked known: as if learned long ago."""
+    digest = hashlib.sha256(item.encode()).digest()
+    spread = int.from_bytes(digest[:4]) / 2**32 * settings.marked_spread_days
+    stability = settings.marked_stability_days + spread
+    memory = Memory(
+        stability=stability,
+        difficulty=STARTING_DIFFICULTY,
+        phase="review",
+        step=None,
+        due=mark.at + timedelta(days=stability),
+        last_review=mark.at,
+    )
+    learned = study_day(mark.at, settings)
+    return CardState(memory, learned, graduated=True, passed=True, lapses=0, suspended=False)
+
+
+def _marked_start(card: str, marks: Mapping[str, Mark], settings: Settings) -> CardState | None:
+    parsed = Card.parse(card)
+    if parsed.rung not in FIRST_RUNGS:
+        return None
+    for item in parsed.items:
+        mark = marks.get(item)
+        if mark is not None and mark.status == "known":
+            return starting(item, mark, settings)
+    return None
 
 
 def _reviewed(

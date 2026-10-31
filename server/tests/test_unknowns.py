@@ -1,26 +1,14 @@
 import numpy as np
 
 from core.candidates import frequency, ranked
-from core.pack import Column, Pack
+from core.pack import Column
 from core.unknowns import unknowns
+from tests.packs import pack_of
 
 KANA_WAKARU = Column("w:1", None)
 KANJI_WAKARU = Column("w:1", "分かる")
 KOTO = Column("w:2", None)
 IRU = Column("w:3", None)
-
-
-def pack_of(*passages: tuple[Column, ...]) -> Pack:
-    columns = list(dict.fromkeys(c for passage in passages for c in passage))
-    appearances = [(p, columns.index(c)) for p, passage in enumerate(passages) for c in passage]
-    return Pack(
-        passages=tuple(f"p{i}" for i in range(len(passages))),
-        sources=("tatoeba",),
-        passage_sources=np.zeros(len(passages), dtype=np.int32),
-        columns=tuple(columns),
-        appearance_passages=np.array([p for p, _ in appearances], dtype=np.int32),
-        appearance_columns=np.array([c for _, c in appearances], dtype=np.int32),
-    )
 
 
 def test_unknowns_add_what_is_missing_from_each_value() -> None:
