@@ -15,9 +15,10 @@ server/
   core/              domain, pure
   langs/ja/          analyser, model prompts, pack facts
   pipeline/          sources → pack
-  store/             SQLite, one file per feature
+  store/             SQLite and data locations, one file per feature
   integrations/      anki/, renshuu/
   api/               FastAPI, one file per feature
+  sim/               simulated learners for tests and the dev server (012)
 web/                 Svelte 5, SvelteKit in single-page mode
   src/ui/            tokens and primitives; the only styling
   src/langs/ja/      kana input (wanakana)
@@ -26,7 +27,7 @@ web/                 Svelte 5, SvelteKit in single-page mode
 CLAUDE.md            agent rules and glossary
 ```
 
-**Rules enforced by tools.** import-linter layers for Python: `core` ← `langs`, `store` ← `pipeline`, `integrations`, `api`; languages come from an explicit table. ESLint `no-restricted-imports` for web: features import `ui`, `api` and `langs`, never each other. Each feature adds its own route folder, so there is no shared route table. Generated API types are build output; CI fails if they are stale.
+**Rules enforced by tools.** import-linter layers for Python: `core` ← `langs`, `store` ← `pipeline`, `integrations`, `api`, `sim`; languages come from an explicit table. ESLint `no-restricted-imports` for web: features import `ui`, `api` and `langs`, never each other. Each feature adds its own route folder, so there is no shared route table. Generated API types are build output; CI fails if they are stale.
 
 **Data.** SQLite in WAL mode with a busy timeout, plain synchronous endpoints. Events hold learning history only; settings and accounts are plain rows. Migrations: `PRAGMA user_version` plus numbered SQL files. Packs are rebuilt, never migrated. The user database is backed up continuously (Litestream): events are the only data that can't be rebuilt.
 
