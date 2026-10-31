@@ -14,4 +14,4 @@ Status: accepted
 
 **Audio.** Audio and pitch accent are part of every word from the start. Pitch practice is optional per user.
 
-**Grammar.** Prerequisites come from the logic of the language; order within them comes from how much real text each point unlocks. Explanations are written and owned by a person.
+**Grammar.** Prerequisites come from the logic of the language; order within them comes from how much real text each point unlocks. Explanations are drafted by a model from compared sources, approved by the owner and checked for correctness by a second model; a qualified human reviews them when affordable (010).
