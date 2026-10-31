@@ -63,10 +63,14 @@ def match(
         exact = [w for w in fitting if spelling in (*w.spellings, *w.readings)]
 
         def main_form(word: Word) -> bool:
-            first = (
-                word.readings[0] if is_kana(spelling) or not word.spellings else word.spellings[0]
-            )
-            return hiragana(first) == hiragana(spelling)
+            # A word without kanji has no single main form: JMdict files じゃ under じゃあ.
+            if not word.spellings:
+                heads = word.readings
+            elif is_kana(spelling):
+                heads = word.readings[:1]
+            else:
+                heads = word.spellings[:1]
+            return hiragana(spelling) in map(hiragana, heads)
 
         return sorted(
             exact or fitting,

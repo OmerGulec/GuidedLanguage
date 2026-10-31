@@ -13,9 +13,10 @@ BODY = Word("w:7", ("体",), ("たい",), ("body",), common=True)
 TIE = Word("w:8", (), ("タイ",), ("tie",), common=True)
 STUDY = Word("w:9", ("勉強",), ("べんきょう",), ("study",), common=True)
 SNAKE = Word("w:10", ("蛇",), ("へび", "じゃ"), ("snake",), common=True)
-WELL = Word("w:11", (), ("じゃ",), ("well then",), common=False)
-WORDS = [WAKARU, KAKERU_HANG, KAKERU_LACK, COFFEE, EASY, GOOD, BODY, TIE, STUDY, SNAKE, WELL]
-FREQUENCY = {"w:1": 30, "w:2": 10, "w:3": 50, "w:4": 5, "w:7": 80, "w:8": 1, "w:10": 40}
+WELL = Word("w:11", (), ("じゃあ", "じゃ"), ("well then",), common=True)
+EVIL = Word("w:12", ("邪",), ("じゃ",), ("evil",), common=True)
+WORDS = [WAKARU, KAKERU_HANG, KAKERU_LACK, COFFEE, EASY, GOOD, BODY, TIE, STUDY, SNAKE, WELL, EVIL]
+FREQUENCY = {"w:1": 30, "w:2": 10, "w:3": 50, "w:4": 5, "w:7": 80, "w:8": 1, "w:10": 40, "w:11": 20}
 
 
 def test_spellings_and_kana_find_their_word() -> None:
@@ -56,4 +57,4 @@ def test_a_suru_verb_falls_back_to_its_noun() -> None:
 
 
 def test_the_word_whose_main_form_was_written_beats_one_where_it_is_a_minor_reading() -> None:
-    assert match([("じゃ", None)], WORDS, FREQUENCY).guessed == {"じゃ": ("w:11", "w:10")}
+    assert match([("じゃ", None)], WORDS, FREQUENCY).guessed == {"じゃ": ("w:11", "w:12", "w:10")}
