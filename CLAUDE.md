@@ -1,6 +1,7 @@
 # Working on GuidedLanguage
 
 Decisions live in `docs/decisions/`. Read the ones your change touches before writing code.
+Where things stand, what is next and how we work: `docs/status.md`. Keep it current.
 
 ## Checks
 
