@@ -8,8 +8,8 @@ from core.settings import Settings
 from core.state import derive
 from core.unknowns import unknowns
 from core.values import values
-from pipeline.build import PACK
 from store.pack import read_pack
+from store.paths import PACK
 
 KNOWN_WORDS = (100, 250, 500, 1000, 2000, 3000, 5000, 10000)
 MARKED_AT = datetime(2026, 1, 1, tzinfo=UTC)

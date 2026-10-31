@@ -43,7 +43,9 @@ def plan(
     suspended = (Card.parse(card).items for card, held in state.cards.items() if held.suspended)
     reteach = sorted({item for items in suspended for item in items})
 
-    budget = max(0, settings.new_budget - len(reteach))
+    today = study_day(now, settings)
+    started_today = sum(held.learned == today for held in state.cards.values())
+    budget = max(0, settings.new_budget - started_today - len(reteach))
     new = [card for card in candidates(state, ranking, goal) if _possible(card, situation)]
 
     modalities: list[Modality] = ["reading"]
@@ -82,6 +84,13 @@ def _reviews(
         reviewed_at, reviewed_card = latest[item]
         return reviewed_card == card_id or study_day(reviewed_at, settings) + spacing <= today
 
+    # The cap limits reviews of learned cards. Same-day learning steps are never capped, or
+    # reaching the cap would leave just-learned words half taught.
+    reviewed_today = sum(
+        study_day(held.memory.last_review, settings) == today and held.learned < today
+        for held in state.cards.values()
+    )
+    steps: list[str] = []
     due: list[tuple[bool, int, str]] = []
     for card_id, held in state.cards.items():
         card = Card.parse(card_id)
@@ -91,12 +100,15 @@ def _reviews(
             state.made_due.get(item, date.max) <= today for item in card.items
         )
         scheduled = held.memory.due < end_of_day and all(spaced(i, card_id) for i in card.items)
-        if made_due or scheduled:
+        if scheduled and held.memory.phase != "review":
+            steps.append(card_id)
+        elif made_due or scheduled:
             frequency = max(ranking.frequency.get(item, 0) for item in card.items)
             due.append((not made_due, -frequency, card_id))
 
     due.sort()
-    return tuple(card_id for _, _, card_id in due[: settings.review_cap])
+    capped = due[: max(0, settings.review_cap - reviewed_today)]
+    return tuple(sorted(steps)) + tuple(card_id for _, _, card_id in capped)
 
 
 def _passages(

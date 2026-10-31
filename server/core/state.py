@@ -51,6 +51,9 @@ class State:
     read: Mapping[Modality, frozenset[str]]
 
 
+EMPTY = State({}, {}, {}, {}, {"reading": frozenset(), "listening": frozenset()})
+
+
 def derive(events: Iterable[Event], settings: Settings) -> State:
     unique = {event.id: event for event in events}
     retracted: set[str] = set()
@@ -60,25 +63,26 @@ def derive(events: Iterable[Event], settings: Settings) -> State:
                 retracted.add(target)
             case _:
                 pass
-    history = sorted(
-        (e for e in unique.values() if e.id not in retracted), key=lambda e: (e.at, e.id)
-    )
+    return advance(EMPTY, (e for e in unique.values() if e.id not in retracted), settings)
 
-    introduced: dict[str, datetime] = {}
-    marks: dict[str, Mark] = {}
-    cards: dict[str, CardState] = {}
-    made_due: dict[str, date] = {}
-    read: dict[Modality, set[str]] = {"reading": set(), "listening": set()}
 
-    for event in history:
+def advance(state: State, events: Iterable[Event], settings: Settings) -> State:
+    """Continue a state with events that all come after its history; derive handles the rest."""
+    introduced = dict(state.introduced)
+    marks = dict(state.marks)
+    cards = dict(state.cards)
+    made_due = dict(state.made_due)
+    read: dict[Modality, set[str]] = {m: set(p) for m, p in state.read.items()}
+
+    for event in sorted(events, key=lambda e: (e.at, e.id)):
         day = study_day(event.at, settings)
         match event.payload:
             case Introduced(item=item, reason=reason):
                 introduced.setdefault(item, event.at)
                 if reason == "reteach":
-                    for card, state in cards.items():
+                    for card, held in cards.items():
                         if item in Card.parse(card).items:
-                            cards[card] = replace(state, lapses=0, suspended=False)
+                            cards[card] = replace(held, lapses=0, suspended=False)
                     made_due[item] = day
             case Reviewed(card=card, passed=passed, method=method) if method != "choice":
                 previous = cards.get(card) or _marked_start(card, marks, settings)

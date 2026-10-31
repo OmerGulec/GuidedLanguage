@@ -9,11 +9,9 @@ from core.pack import Occurrence, Passage, Source, Word, passage_id
 from langs.ja.analyser import Analyser, Lexicon, read_readings, word
 from langs.ja.dictionary import read_jmdict
 from store.pack import write_pack
+from store.paths import DATA, PACK, ROOT
 
-ROOT = Path(__file__).resolve().parents[2]
-DATA = ROOT / "data"
 CONTENT = ROOT / "content" / "ja"
-PACK = DATA / "packs" / "ja" / "pack.sqlite"
 JMDICT_URL = "https://www.edrdg.org/pub/Nihongo/JMdict_e.gz"
 TATOEBA_URL = "https://downloads.tatoeba.org/exports/per_language/jpn/jpn_sentences.tsv.bz2"
 TATOEBA = Source("tatoeba", "Tatoeba", "CC BY 2.0 FR", "full")

@@ -32,9 +32,9 @@ testpaths = ["tests"]
 pythonpath = ["."]
 
 [tool.importlinter]
-root_packages = ["core", "langs", "store", "pipeline", "integrations", "api"]
+root_packages = ["core", "langs", "store", "pipeline", "integrations", "api", "sim"]
 
 [[tool.importlinter.contracts]]
 name = "Layers (011)"
 type = "layers"
-layers = ["api | pipeline | integrations", "langs | store", "core"]
+layers = ["api | pipeline | integrations | sim", "langs | store", "core"]

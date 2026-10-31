@@ -111,6 +111,16 @@ def test_past_the_review_cap_the_most_frequent_items_come_first() -> None:
     assert planned(history, 60, replace(TOKYO, review_cap=1)).reviews == (RECOGNIZE,)
 
 
+def test_the_cap_counts_todays_reviews_but_never_holds_back_learning_steps() -> None:
+    history = [*learned(RECOGNIZE), *learned(KOTO_RECOGNIZE, KOTO)]
+    capped = replace(TOKYO, review_cap=1)
+    history.append(review(RECOGNIZE, 60, hour=8))
+    assert planned(history, 60, capped).reviews == ()
+
+    learning = [event(at(5, 8), Introduced(KOTO, "new")), review(KOTO_RECOGNIZE, 5, hour=8)]
+    assert planned(learning, 5, replace(TOKYO, review_cap=0)).reviews == (KOTO_RECOGNIZE,)
+
+
 def test_after_a_review_the_items_other_cards_wait_the_spacing() -> None:
     history = [*learned(RECOGNIZE), review(LISTEN, 2, hour=10), review(RECOGNIZE, 30)]
     assert LISTEN not in planned(history, 30).reviews

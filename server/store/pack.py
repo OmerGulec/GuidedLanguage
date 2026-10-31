@@ -60,6 +60,26 @@ def write_pack(
     db.close()
 
 
+def sample_pack(source: Path, target: Path, every: int) -> None:
+    """Copy every n-th passage of a pack, with its occurrences and the words they use."""
+    target.unlink(missing_ok=True)
+    with closing(sqlite3.connect(target)) as db:
+        db.executescript(SCHEMA)
+        db.execute("ATTACH DATABASE ? AS source", (str(source),))
+        db.executescript(f"""
+            INSERT INTO meta SELECT * FROM source.meta;
+            INSERT INTO sources SELECT * FROM source.sources;
+            INSERT INTO passages SELECT * FROM source.passages WHERE rowid % {every} = 0;
+            INSERT INTO occurrences SELECT * FROM source.occurrences
+                WHERE passage IN (SELECT id FROM passages);
+            INSERT INTO words SELECT * FROM source.words
+                WHERE id IN (SELECT item FROM occurrences);
+        """)
+        db.commit()
+        db.execute("DETACH DATABASE source")
+        db.execute("VACUUM")
+
+
 def read_pack(path: Path) -> Pack:
     with closing(sqlite3.connect(path)) as db:
         sources = [row[0] for row in db.execute("SELECT id FROM sources ORDER BY id")]
