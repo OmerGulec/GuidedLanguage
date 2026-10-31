@@ -2,7 +2,7 @@
 
 Status: accepted
 
-**One queue.** Words, grammar uses and, if chosen, kanji compete in one queue, ranked by how much real text each unlocks for this learner per unit of effort. A grammar use costs more effort than a word; the ratio is a setting.
+**One queue.** Words, grammar uses and, if chosen, kanji compete in one queue, ranked by how much real text each unlocks for this learner per unit of effort. A grammar use costs more effort than a word; the ratio is a setting. Unlock value is computed on de-duplicated text with each source's weight capped, so repetitive sources don't skew the order.
 
 **Hard edges.** Kana first. A form after what it is derived from (007). A pattern after its parts, unless met as a chunk. A system lesson before its members.
 
