@@ -20,6 +20,9 @@ Status: accepted
 - Recognition shows the word alone, with a fresh real sentence on the back. Words that share a spelling with another word show a sentence on the front.
 - Production is a cloze in a sentence, never L1 → word.
 - Listening plays the word inside a short sentence. Most listening practice happens on passages.
+- Grammar use: a real sentence where everything else is known; say what it means. The back shows a translation and the key point. The form is highlighted at first; highlighting stops once the card is stable. Translations are made offline by a model and checked like grammar labels (006).
+- Formation: a known verb in a form, back to its dictionary form. A different verb each review, favouring tricky ones.
+- Contrast: a confusable pair side by side; say the difference.
 
 **Spellings and readings.** A word is learned in its most common spelling and reading, counted in our library. Other spellings get their own card only when common enough to rank in the queue; rare ones are labelled as variants. Other readings are shown and accepted.
 
@@ -27,7 +30,11 @@ Status: accepted
 
 **Kanji.** Optional. "Through words only" shows information but never drills. "Kanji as items" queues a kanji once it appears in enough known words, weighted by misses. Readings are (kanji, reading) pairs, taught only when a known word uses them. Readings that belong to a whole word (大人 おとな) don't count; sound changes group under the base reading.
 
-**Upkeep.** Repeated failures suspend a card and re-teach it. Confusable items are shown side by side. Anything can be marked known or ignored.
+**Grading.** Pass or fail only. The rules are fixed beforehand per card type, and only the points on the back count: word, reading and main meaning; formation, the exact dictionary form; grammar use, the key point; contrast, both sides. When in doubt, it's a fail. Production is typed and checked automatically.
+
+**Collisions.** Look-alikes are where knowing gets tested. Pairs come from shape (待/持), sound (期間/機関), meaning (暑い/熱い), grammar form (ている/てある) and the learner's own mistakes (a wrong answer that is another known item). A new item is introduced next to the known items it most resembles. Once both items of a pair are known, contrast cards test them together.
+
+**Upkeep.** Repeated failures suspend a card and re-teach it. Anything can be marked known or ignored.
 
 **Not in v1.** Speaking, handwriting.
 
