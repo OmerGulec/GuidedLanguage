@@ -2,7 +2,10 @@
 name = "guidedlanguage"
 version = "0.0.0"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "fugashi>=1.5.2",
+    "unidic-lite>=1.0.8",
+]
 
 [dependency-groups]
 dev = [
