@@ -22,18 +22,17 @@ From `server/`:
 
 ## Findings
 
-- Tatoeba, words only: the 1,000 most frequent words fully cover 33% of sentences and leave one unknown in another 33%; 5,000 words give 74% and 19%. Ranking by text unlocked barely beats frequency, so the queue ranks by frequency (009).
+- Tatoeba, words only: the 1,000 most frequent words fully cover 31% of sentences and leave one unknown in another 35%; 5,000 words give 68% and 23%. Ranking by text unlocked barely beats frequency, so the queue ranks by frequency (009).
 - Simulated workload: 10 new words a day settles at about 100 reviews a day, 8% failed. A Listener at 15 words a day reaches about 260 and overruns the 200 cap.
-- The owner's Renshuu export, 1,437 words: 1,410 matched, 27 guessed, 0 missing; 20.5% of passages fully known, 31.4% with one unknown. Understated: the analyser splits compounds (お茶 → 御 + 茶, 日本語 → 日本 + 語, 子供たち → 子供 + 達) and grammar is not modelled (ください → 下さる, てしまう → 仕舞う). The export is not in the repo; ask the owner to upload it again.
-- Linking rules found the hard way: lemma before written forms (いる not 射る), a readings table (私 read わたし), kana words by written reading first (いい → JMdict いい), potential verbs fall back to the verb (会えた → 会う).
+- The owner's Renshuu export, 1,437 words: 1,410 matched, 27 guessed, 0 missing; 21.2% of passages fully known, 34.6% with one unknown. The words still missing are mostly grammar the analyser links as words (様 for よう, 下さる for ください, 仕舞う for てしまう, 就く for について) and counters (箇 in 一つ, 度 in 一度). The export is not in the repo; ask the owner to upload it again.
+- Linking rules found the hard way: lemma before written forms (いる not 射る), a readings table (私 read わたし), kana words by written reading first (いい → JMdict いい), potential verbs fall back to the verb (会えた → 会う). A run of words JMdict lists as one word is one word (お茶, 日本語, 泣き出す), longest first, matched by spelling because sounds change where words join (日曜日); except set phrases (JMdict `exp`, left to the model pass) and counters, which stay with their number.
 
 ## Next
 
-1. Merge consecutive tokens into the longest JMdict entry when building the pack (お茶, 日本語), then re-run the owner's import.
-2. Design: the owner sends 3 to 5 references; three deliberately different reader mockups; then tokens and primitives. Avoid default Claude visuals: purple or indigo, gradients, rounded cards with soft shadows, Inter, emoji icons, pills everywhere, progress rings and streaks.
-3. Full-history importers: the owner's words live in Renshuu (API), Anki review logs later.
-4. Grammar (006 to 010): items, lessons, the model pass over the library. The model pass costs money and needs the owner's go-ahead.
-5. API, user database, web app (011).
+1. Design: the owner sends 3 to 5 references; three deliberately different reader mockups; then tokens and primitives. Avoid default Claude visuals: purple or indigo, gradients, rounded cards with soft shadows, Inter, emoji icons, pills everywhere, progress rings and streaks.
+2. Full-history importers: the owner's words live in Renshuu (API), Anki review logs later.
+3. Grammar (006 to 010): items, lessons, the model pass over the library. The model pass costs money and needs the owner's go-ahead.
+4. API, user database, web app (011).
 
 ## Open
 
@@ -41,6 +40,7 @@ From `server/`:
 - Golden outputs per named learner (012) wait until plan behaviour settles; invariants are tested meanwhile.
 - Display policy is not enforced yet; Tatoeba allows full display.
 - A word marked known counts in every kanji spelling until reviewed.
+- A compound JMdict lists counts as one unknown word even when its parts are known (経済活動). Rare compounds are where this bites; reading them through their parts needs a way to tell transparent compounds from opaque ones (自転車).
 
 ## Working agreements
 

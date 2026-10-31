@@ -48,8 +48,8 @@ def build() -> None:
         if pid in passages:
             continue
         passages[pid] = Passage(pid, TATOEBA.id, number, text)
-        for token in analyser.words(text):
-            link = lexicon.link(token)
+        for token, entry in lexicon.words(analyser.tokens(text)):
+            link = lexicon.link(token, entry)
             if link.item not in words:
                 words[link.item] = lexicon.unresolved(token)
                 unresolved.add(link.item)

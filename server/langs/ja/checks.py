@@ -8,7 +8,8 @@ def check_links(analyser: Analyser, lexicon: Lexicon, path: Path) -> list[str]:
     """Words that must link to a given dictionary entry; returns a line for each that does not."""
     failures: list[str] = []
     for sentence, surface, spelling, reading in rows(path):
-        entries = {token.surface: lexicon.entry(token) for token in analyser.words(sentence)}
+        words = lexicon.words(analyser.tokens(sentence))
+        entries = {token.surface: entry for token, entry in words}
         entry = entries.get(surface)
         if entry is None:
             failures.append(f"{sentence} {surface}: not linked, expected {spelling} ({reading})")
