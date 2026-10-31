@@ -15,6 +15,9 @@ uv run ruff check . && uv run ruff format --check . && uv run pyright && uv run 
 - Code explains itself. Names say what a thing is in the domain. No names or comments that refer to a conversation, a task, a ticket or anything else the reader would have to look up.
 - Comments are rare and say why, never what. Write them the way maintainers of a mature, respected codebase do. Avoid verbosity.
 - Names are full words and short. One name per concept (see Glossary).
+- Numbers that mean something get a name.
+- Blank lines separate the logical steps of a function.
+- Field names from external formats (JMdict tags, UniDic features) get domain names once, where they are read.
 - Before adding to a function or file, ask whether the result is professionally acceptable. If it isn't, refactor first.
 - No speculative abstraction. Interfaces exist only at the seams named in 011.
 - No new dependency without the owner's approval.

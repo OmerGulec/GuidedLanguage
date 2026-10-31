@@ -5,6 +5,8 @@ from typing import Literal
 
 type Display = Literal["full", "excerpt", "analysis"]
 
+PASSAGE_ID_LENGTH = 16
+
 
 @dataclass(frozen=True, slots=True)
 class Source:
@@ -42,4 +44,4 @@ class Occurrence:
 
 def passage_id(source: str, text: str) -> str:
     normalised = unicodedata.normalize("NFKC", text).strip()
-    return hashlib.sha256(f"{source}\n{normalised}".encode()).hexdigest()[:16]
+    return hashlib.sha256(f"{source}\n{normalised}".encode()).hexdigest()[:PASSAGE_ID_LENGTH]

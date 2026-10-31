@@ -45,7 +45,15 @@ def test_kanji_surface_keeps_its_kanji_spelling(analyser: Analyser, lexicon: Lex
 
 def test_reading_separates_words_that_share_a_spelling(lexicon: Lexicon) -> None:
     for reading in ("わたし", "あたし"):
-        token = Token("私", "私", "私", reading, "代名詞", 0, 1)
+        token = Token(
+            surface="私",
+            lemma="私",
+            base="私",
+            reading=reading,
+            part_of_speech="代名詞",
+            start=0,
+            end=1,
+        )
         assert lexicon.link(token).item == item("私", reading)
 
 

@@ -63,8 +63,11 @@ def word(entry: Entry) -> Word:
     return Word(f"w:{entry.id}", entry.spellings, entry.readings, entry.glosses)
 
 
+_KATAKANA_TO_HIRAGANA = ord("ア") - ord("あ")
+
+
 def hiragana(text: str) -> str:
-    return "".join(chr(ord(c) - 0x60) if "ァ" <= c <= "ヶ" else c for c in text)
+    return "".join(chr(ord(c) - _KATAKANA_TO_HIRAGANA) if "ァ" <= c <= "ヶ" else c for c in text)
 
 
 def is_kana(text: str) -> bool:

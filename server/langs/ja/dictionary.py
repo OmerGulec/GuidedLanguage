@@ -7,6 +7,15 @@ from dataclasses import dataclass
 from pathlib import Path
 
 COMMON_TAGS = frozenset({"news1", "ichi1", "spec1", "spec2", "gai1"})
+
+# Paths inside a JMdict <entry>.
+_ID = "ent_seq"
+_SPELLINGS = "k_ele/keb"
+_READINGS = "r_ele/reb"
+_PRIORITIES = ("k_ele/ke_pri", "r_ele/re_pri")
+_FIRST_SENSE_GLOSSES = "sense[1]/gloss"
+_PARTS_OF_SPEECH = "sense/pos"
+
 _ENTITY = re.compile(r"&([\w-]+);")
 _XML_ENTITIES = frozenset({"amp", "lt", "gt", "quot", "apos"})
 
@@ -34,16 +43,16 @@ def read_jmdict(path: Path) -> Iterator[Entry]:
 
 
 def _entry(element: ET.Element) -> Entry:
-    priorities = {p.text for p in element.iterfind("k_ele/ke_pri")}
-    priorities |= {p.text for p in element.iterfind("r_ele/re_pri")}
-    first_sense = element.find("sense")
+    priorities = {tag for path in _PRIORITIES for tag in _texts(element, path)}
     return Entry(
-        id=int(element.findtext("ent_seq", "0")),
-        spellings=tuple(k.text or "" for k in element.iterfind("k_ele/keb")),
-        readings=tuple(r.text or "" for r in element.iterfind("r_ele/reb")),
-        glosses=()
-        if first_sense is None
-        else tuple(g.text or "" for g in first_sense.iterfind("gloss")),
-        parts_of_speech=frozenset(p.text or "" for p in element.iterfind("sense/pos")),
+        id=int(_texts(element, _ID)[0]),
+        spellings=_texts(element, _SPELLINGS),
+        readings=_texts(element, _READINGS),
+        glosses=_texts(element, _FIRST_SENSE_GLOSSES),
+        parts_of_speech=frozenset(_texts(element, _PARTS_OF_SPEECH)),
         common=bool(priorities & COMMON_TAGS),
     )
+
+
+def _texts(element: ET.Element, path: str) -> tuple[str, ...]:
+    return tuple(child.text for child in element.iterfind(path) if child.text)

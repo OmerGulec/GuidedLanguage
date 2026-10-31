@@ -16,6 +16,8 @@ CONTENT = ROOT / "content" / "ja"
 JMDICT_URL = "https://www.edrdg.org/pub/Nihongo/JMdict_e.gz"
 TATOEBA_URL = "https://downloads.tatoeba.org/exports/per_language/jpn/jpn_sentences.tsv.bz2"
 TATOEBA = Source("tatoeba", "Tatoeba", "CC BY 2.0 FR", "full")
+UNRESOLVED_SHOWN = 15
+WORDS_SHOWN = 20
 
 
 def fetch(url: str) -> Path:
@@ -71,13 +73,21 @@ def report(
     linked = sum(o.item not in unresolved for o in occurrences)
     print(f"{passages} passages, {len(occurrences)} word occurrences")
     print(f"linked to JMdict: {linked / len(occurrences):.1%}")
-    in_passages = Counter(item for _, item in {(o.passage, o.item) for o in occurrences})
-    top = [i for i, _ in in_passages.most_common() if i in unresolved][:15]
-    print("most frequent unresolved:", " ".join(words[i].spellings[0] for i in top))
+
+    passages_per_item = Counter(item for _, item in {(o.passage, o.item) for o in occurrences})
+    ranked = [item for item, _ in passages_per_item.most_common()]
+
+    top_unresolved = [item for item in ranked if item in unresolved][:UNRESOLVED_SHOWN]
+    print("most frequent unresolved:", " ".join(label(words[item]) for item in top_unresolved))
+
     print("most frequent words:")
-    for item, count in in_passages.most_common(20):
-        w = words[item]
-        print(f"  {count:>6}  {w.spellings[0] if w.spellings else w.readings[0]}  {w.glosses[:1]}")
+    for item in ranked[:WORDS_SHOWN]:
+        word = words[item]
+        print(f"  {passages_per_item[item]:>6}  {label(word)}  {'; '.join(word.glosses)}")
+
+
+def label(word: Word) -> str:
+    return word.spellings[0] if word.spellings else word.readings[0]
 
 
 if __name__ == "__main__":
