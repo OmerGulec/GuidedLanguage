@@ -31,4 +31,4 @@ Status: accepted
 
 **Not in v1.** Speaking, handwriting.
 
-**Open.** What happens to a chunk once its grammar is taught.
+**Chunks.** What happens once a chunk's grammar is taught: see 007.
