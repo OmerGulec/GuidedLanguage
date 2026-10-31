@@ -1,6 +1,6 @@
 # 013 — Core definitions
 
-Status: proposed
+Status: accepted
 
 Terms are defined in `docs/glossary.md`.
 
