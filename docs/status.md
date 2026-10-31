@@ -29,7 +29,7 @@ From `server/`:
 
 ## Next
 
-1. Design: the owner sends 3 to 5 references; three deliberately different reader mockups; then tokens and primitives. Avoid default Claude visuals: purple or indigo, gradients, rounded cards with soft shadows, Inter, emoji icons, pills everywhere, progress rings and streaks.
+1. Design. Direction under review: a printed technical manual (the owner's references: 1970s US Navy training manuals and *A Dictionary of Basic Japanese Grammar*). Running heads over a heavy rule, numbered figures and tables with captions such as "Figure 2-1.—…", a Century Schoolbook-style serif (TeX Gyre Schola), Mincho for Japanese, draughting lettering for labels (osifont), hatching as the notation with a key on the page, dimension lines for grammar spans, key-sentence tables for lessons. Black ink; one spot colour only for unknown words and ○/× marks. Copy reads like a legal notice: complete, neutral sentences, no commands or encouragement. Rejected: dashboard looks (big-number tiles, modern grotesques, filled buttons), paper textures and scan artefacts. Mockups (rows A to C rejected, row D current) are on the owner's private canvas https://claude.ai/artifact/7R6Yo7NbUwATNX2XHguPyE. Next: the owner's verdict on D, phone versions, then tokens and primitives.
 2. Full-history importers: the owner's words live in Renshuu (API), Anki review logs later.
 3. Grammar (006 to 010): items, lessons, the model pass over the library. The model pass costs money and needs the owner's go-ahead.
 4. API, user database, web app (011).
