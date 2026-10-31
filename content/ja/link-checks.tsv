@@ -1,0 +1,14 @@
+# Words that must link to a given dictionary entry; the pack build fails otherwise.
+# sentence	word as written	expected spelling	expected reading
+ここにいる。	いる	居る	いる
+することがある。	こと	事	こと
+そのようだ。	よう	様	よう
+私は行く。	私	私	わたし
+もうわかった。	わかっ	分かる	わかる
+本がある。	ある	有る	ある
+先生になる。	なる	成る	なる
+その本を読む。	その	其の	その
+今日は暑い。	今日	今日	きょう
+コーヒーを飲む。	コーヒー	コーヒー	コーヒー
+彼は学生です。	彼	彼	かれ
+毎日勉強する。	する	為る	する

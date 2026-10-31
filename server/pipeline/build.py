@@ -7,6 +7,7 @@ from pathlib import Path
 
 from core.pack import Occurrence, Passage, Source, Word, passage_id
 from langs.ja.analyser import Analyser, Lexicon, read_readings, word
+from langs.ja.checks import check_links
 from langs.ja.dictionary import read_jmdict
 from store.pack import write_pack
 from store.paths import DATA, PACK, ROOT
@@ -63,6 +64,12 @@ def build() -> None:
     write_pack(PACK, meta, [TATOEBA], words.values(), passages.values(), occurrences)
     report(words, unresolved, len(passages), occurrences)
     print(f"written {PACK}")
+
+    failures = check_links(analyser, lexicon, CONTENT / "link-checks.tsv")
+    for failure in failures:
+        print(f"link check failed: {failure}")
+    if failures:
+        raise SystemExit(1)
 
 
 def report(

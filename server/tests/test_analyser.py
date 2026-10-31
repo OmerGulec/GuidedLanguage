@@ -4,6 +4,7 @@ import pytest
 
 from core.pack import passage_id
 from langs.ja.analyser import Analyser, Lexicon, Link, Token, read_readings, word
+from langs.ja.checks import check_links
 from langs.ja.dictionary import Entry, read_jmdict
 
 ENTRIES = list(read_jmdict(Path(__file__).parent / "fixtures" / "jmdict.xml"))
@@ -94,3 +95,19 @@ def test_spans_point_at_the_surface_despite_spaces(analyser: Analyser) -> None:
 def test_passage_id_ignores_width_and_surrounding_space() -> None:
     assert passage_id("tatoeba", "ＡＢＣです。 ") == passage_id("tatoeba", "ABCです。")
     assert passage_id("tatoeba", "です。") != passage_id("aozora", "です。")
+
+
+def test_link_checks_report_words_linked_elsewhere_or_not_at_all(
+    analyser: Analyser, lexicon: Lexicon, tmp_path: Path
+) -> None:
+    checks = tmp_path / "link-checks.tsv"
+    checks.write_text(
+        "# sentence\tword\tspelling\treading\n"
+        "ここにいる。\tいる\t居る\tいる\n"
+        "ここにいる。\tいる\t要る\tいる\n"
+        "ここにいる。\tねこ\t猫\tねこ\n"
+    )
+    assert check_links(analyser, lexicon, checks) == [
+        "ここにいる。 いる: linked to 居る (いる), expected 要る (いる)",
+        "ここにいる。 ねこ: not linked, expected 猫 (ねこ)",
+    ]

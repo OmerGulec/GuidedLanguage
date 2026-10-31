@@ -7,6 +7,7 @@ from typing import Protocol, cast
 import fugashi  # pyright: ignore[reportMissingTypeStubs]
 
 from core.pack import Word
+from langs.ja.content import rows
 from langs.ja.dictionary import Entry
 
 # UniDic part of speech → JMdict part-of-speech prefixes it may link to.
@@ -104,8 +105,7 @@ class Analyser:
 
 
 def read_readings(path: Path) -> dict[tuple[str, str], str]:
-    rows = (line.split("\t") for line in path.read_text().splitlines() if not line.startswith("#"))
-    return {(lemma, analysed): usual for lemma, analysed, usual in rows}
+    return {(lemma, analysed): usual for lemma, analysed, usual in rows(path)}
 
 
 class Lexicon:
