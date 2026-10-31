@@ -4,27 +4,40 @@ One name per concept. Code, comments and documents use these and no synonyms.
 
 | Term | Meaning |
 |---|---|
-| Item | Something a learner can know: word, set phrase, grammar use, formation, kanji, kanji reading (a kanji with one of its readings), kana. A word is one dictionary entry. |
+| Item | Something a learner can know. Kinds: kana, word, set phrase, grammar use, formation, system, kanji, kanji reading. A word is one dictionary entry. |
+| Grammar use | One form with one use (006). Includes the sentence structures of 008. |
+| System | A lesson that explains a system once (007); an item with no cards. |
+| Kanji reading | A kanji with one of its readings, offered when a known word uses it. |
 | Facet | One side of an item: spelling, reading, meaning, audio, pitch. Declared per language and item kind. |
-| Card | A subject, a prompt facet and a set of answer facets, identified as `subject/prompt/answers`. The subject is an item, or a pair of items for a contrast card. |
-| Ladder | The ordered cards a goal gives an item kind. Each card is a rung. |
-| Goal | What a learner wants to be able to do; chooses the ladders. |
+| Spelling kind | The spelling of an occurrence: one specific kanji spelling, or kana. |
+| Card | A subject and a rung, identified as `subject/rung`. The subject is an item, an item in one spelling, or a pair of items for a contrast card. |
+| Ladder | The ordered rungs a goal gives an item kind (004). Each rung has a stable name. |
+| Goal | What a learner wants to be able to do; chooses the rungs. |
 | Situation | What is possible right now: sound, keyboard. |
+| Method | How a card was answered: self-graded, typed or multiple choice. |
 | Form | An inflection, particle or multi-part pattern. |
-| Use | One function of a form. A grammar use is one form with one use. |
 | Formation | The skill of building or undoing a form. |
 | Pattern | A form made of parts, such as てもいい. |
+| Chunk | A pattern known before its parts are. |
+| Explanation step | The short "why it means this" shown once a chunk's parts are known. |
 | Source | Where passages come from, with license and display policy. |
 | Passage | A short self-contained text, identified by a hash of source and normalised text. |
 | Occurrence | An item at a span of a passage, in a given spelling. |
 | Modality | Reading or listening. |
+| Difficulty | A passage's number of items, then its deepest nesting (008). |
 | Event | Something that happened to a learner. Append-only. |
 | State | Everything derived from a learner's events. |
 | Study day | A local date that starts at the learner's chosen hour. |
-| Graduated | A card passed on a study day after the one it was first learned. |
-| Known | An item whose first rung has graduated and whose last review passed. |
+| Due | A card is due on a study day when its recall chance would fall below the retention target by the end of that day, or when a lookup made it due. |
+| Overdue | Due on an earlier study day and not yet reviewed. |
+| Learned | First reviewed. |
+| Graduated | Passed on a study day after the one it was learned, or given a starting memory by Marked known. |
+| Lapse | A failed review of a graduated card that was not overdue. |
+| Known | An item whose first rung has graduated and whose last review did not fail. |
+| Re-teaching | Showing a suspended item's lesson again, then resuming its cards. |
 | Value | How well a card is held at an instant, from 0 to 1 (013). |
-| Coverage | A passage's expected number of unknown items, per modality (013). |
+| Unknowns | A passage's expected number of unknown items, per modality (013). |
+| Coverage | The share of the library a learner can read, shown as progress; derived from unknowns. |
 | Mastery | A card's stability: how long its memory lasts without review. |
-| New budget | New cards per day: first cards of new items and newly unlocked rungs. |
+| New budget | Slots per day for new cards: first cards of new items, unlocked rungs, contrast cards and re-teaching. |
 | Pack | The read-only build of one language's library and items. |

@@ -14,7 +14,7 @@ Status: accepted
 
 **Patterns.** A pattern lists its parts as uses, with an author's note on how much they explain the meaning. When the last part is learned, the pattern gets a short "why it means this" step, keeps its review history, and its variants (なくてもいい) become cheap to learn. When a part is taught, its lesson shows the patterns the learner already knows that contain it. Authors can override this for parts never taught alone.
 
-**Nuance.** A use can be flagged as nuance (sentence-final ね, politeness level). Nuance items never add to coverage.
+**Nuance.** A use can be flagged as nuance (sentence-final ね, politeness level). Nuance items never add to unknowns.
 
 **Contractions.** ちゃう, なきゃ and similar are spelling variants of their full forms.
 

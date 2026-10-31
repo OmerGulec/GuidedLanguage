@@ -10,7 +10,7 @@ Status: accepted
 
 **Three kinds of test.**
 
-- Behaviour: properties of the pure core (replaying events is deterministic; learning an item never raises a passage's expected unknowns) and golden outputs per named state (today's plan, queue order, coverage).
+- Behaviour: properties of the pure core (replaying events is deterministic; learning an item never raises a passage's unknowns) and golden outputs per named state (today's plan, candidate order, unknowns).
 - Architecture: dependency layers, display policy, ID resolution.
 - The running app: Playwright drives each screen in each named state and saves screenshots for review.
 

@@ -2,17 +2,18 @@
 
 Status: accepted
 
-**Goals.** Learners pick outcomes, not cards: Reader, Listener, Kanji, Complete. Each preset turns on rungs of the ladders below; custom goals pick rungs freely behind an advanced screen. A learner who always reviews without sound can choose kana spelling → meaning there.
+**Goals.** Learners pick outcomes, not cards: Reader, Listener, Kanji, Complete. Each preset turns on rungs of the ladders below; custom goals pick rungs freely behind an advanced screen. A learner who always reviews without sound can choose `recognize` in the kana spelling there.
 
-| Item kind | Rungs in order (presets that include them) |
+| Item kind | Rungs in order, with stable names (presets that include them) |
 |---|---|
-| Word, set phrase | 1. spelling → {reading, meaning} (all) · 2. audio in a sentence → meaning (Listener, Complete) · 3. cloze, typed (Complete) · 4. audio → pitch (Complete) |
-| Kana | 1. kana → sound (all) · 2. audio → kana (Listener, Complete) |
-| Grammar use | 1. sentence → meaning (all) · 2. cloze, typed (Complete) |
-| Formation | 1. form → dictionary form (all) · 2. dictionary form → form, typed (Complete) |
-| Kanji | 1. kanji → meaning (Kanji, Complete) |
-| Kanji reading | 1. a known word with the kanji → that kanji's reading (Kanji, Complete) |
-| Contrast pair | 1. both items → the difference (all) |
+| Word, set phrase | 1. `recognize`: spelling → {reading, meaning} (all) · 2. `listen`: audio in a sentence → meaning (Listener, Complete) · 3. `cloze`: type the word into a sentence (Complete) · 4. `pitch`: audio → pitch (Complete) |
+| Kana | 1. `read`: kana → sound (all) · 2. `hear`: audio → kana (Listener, Complete) |
+| Grammar use | 1. `sentence`: sentence → meaning (all) · 2. `cloze`, typed (Complete) |
+| Formation | 1. `undo`: form → dictionary form (all) · 2. `build`: dictionary form → form, typed (Complete) |
+| Kanji | 1. `meaning`: kanji → meaning (Kanji, Complete) |
+| Kanji reading | 1. `reading`: a known word with the kanji → that kanji's reading (Kanji, Complete) |
+| Contrast (a pair of items) | 1. `contrast`: both items → the difference (all) |
+| System | none |
 
 **Situation.** Sound and keyboard are remembered per device. Cards the situation rules out wait; they are not failed. Stand-ins come later, and never count toward the card they replace.
 
