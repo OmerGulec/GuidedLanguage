@@ -1,4 +1,8 @@
-from pipeline.labels import settled
+from pathlib import Path
+
+import pytest
+
+from pipeline.labels import read_agreed, settled
 from pipeline.splits import Labels
 
 PLACES = {"s": [3, 7, 9, 12]}
@@ -23,3 +27,14 @@ SECOND: Labels = {
 def test_a_label_stands_only_where_both_models_are_sure_of_the_same_use() -> None:
     assert settled(PLACES, FIRST, SECOND) == {("s", 3): "wa.topic"}
     assert settled(PLACES, SECOND, FIRST) == {("s", 3): "wa.topic"}
+
+
+def test_a_set_waiting_for_labels_is_left_out_and_a_half_labelled_one_refused(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "waiting.jsonl").write_text('{"id": "s", "forms": [{"n": 0, "at": 3}]}\n')
+    assert read_agreed(tmp_path) == {}
+
+    (tmp_path / "waiting.first.jsonl").write_text("")
+    with pytest.raises(ValueError):
+        read_agreed(tmp_path)

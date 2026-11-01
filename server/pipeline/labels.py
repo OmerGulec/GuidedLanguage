@@ -2,7 +2,8 @@
 
 Each labelled set is a file of sentences with the forms to label, `NAME.jsonl`, and the two
 labellings of it by different models, `NAME.<model>.jsonl`. Where both pick the same use and
-both are sure of it, the label stands; anywhere else the form keeps its shares.
+both are sure of it, the label stands; anywhere else the form keeps its shares. A set not yet
+labelled is left out.
 """
 
 from collections.abc import Mapping
@@ -37,6 +38,8 @@ def read_agreed(folder: Path) -> dict[Place, str]:
     agreed: dict[Place, str] = {}
     for sentences in sorted(p for p in folder.glob("*.jsonl") if p.stem.count(".") == 0):
         labellings = sorted(folder.glob(f"{sentences.stem}.*.jsonl"))
+        if not labellings:
+            continue
         if len(labellings) != LABELLINGS_PER_SET:
             raise ValueError(f"{sentences.name}: {len(labellings)} labellings, not two")
         places = _places(sentences)
