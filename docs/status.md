@@ -2,6 +2,10 @@
 
 Where things stand, for whoever picks up the work next. Decisions are in `docs/decisions/`; this file is the rest.
 
+**Where we left off (1 November 2026).** Grammar now runs end to end in the backend: 201 items with keys, rules that find forms, measured use shares, grammar in unknowns and in the daily plan, placement marks that are reviewed and withdrawn. The agreed next step is the app's first version (011): the owner asked for a short spec first, covering the screens (import, Today, Review, Reader, grammar pages from headers), what each card shows for words and for grammar, and what v1 leaves out. Write that spec and discuss it before building. After it: lessons for the first ~20 grammar items by the 010 process, done in-session by agents as for ている.
+
+**A fresh session starts without `data/`** (gitignored): rebuild the pack (`pipeline.build`, about 2.5 min) and refetch Renshuu (`integrations.renshuu fetch`, needs the key in `read_only_renshuu`). The scratchpad is lost too; nothing in it is needed except as noted under Running.
+
 ## Built
 
 - **Pack build** (`server/pipeline/`): Tatoeba sentences and JMdict, analysed with fugashi and unidic-lite, words linked to JMdict entries, grammar found by the rules. A form's uses share its occurrence by the shares measured on a labelled sample (`content/ja/grammar/splits.tsv`, from `samples/`), evenly among uses the sample never met; a word a form is made of (こと, できる in ことができる) is left to the form. Fails if `content/ja/link-checks.tsv` or the grammar checks do not hold.
@@ -24,7 +28,8 @@ From `server/`:
 - `uv run python -m integrations.wordlist FILE`: imports `word/reading` or `word<TAB>reading` lines, prints coverage and the next words to learn.
 - `uv run python -m integrations.renshuu fetch` saves the owner's Renshuu history to `data/renshuu/` (about 30 calls of the 2,000 a day allowed; needs `api.renshuu.org` allowed and the read-only key in the environment variable `read_only_renshuu`). `... renshuu report` replays it and prints coverage.
 - `uv run python -m pipeline.grammar` runs the grammar checks, then the rules over the whole library (about 70 s): forms found, the share the model must settle, uses no rule finds, and the particles and endings no rule takes.
-- The owner's grammar checklist: https://claude.ai/artifact/S4iqTQWxresK3WigTLPcHM (private). Ticks and flags are saved in its database, collection `placement`, document `ticks` (`known` and `flagged`: lists of item ids); read them with the ArtifactData tool. The page is built from `content/ja/grammar` by scratch scripts and holds a library example per item where one exists in which the owner knows every word.
+- The owner's grammar checklist: https://claude.ai/artifact/S4iqTQWxresK3WigTLPcHM (private). Ticks and flags are saved in its database, collection `placement`, document `ticks` (`known` and `flagged`: lists of item ids); read them with the ArtifactData tool. On 1 November it held 28 ticks, no flags. The page embeds its data as a JSON array of stages (`name`, `items` with `id`, `kind`, `name`, `written`, `key`, `nuance`, `example` {`text`, `tatoeba`}); it was built by scratch scripts that are gone, so to refresh it, read the page back with the Artifact tool and regenerate the array from `content/ja/grammar` and the pack.
+- Labelling a sample in-session (no API key, no API bill): write the sentences with their multi-use forms and a guide listing the uses' keys, split into parts, give each part to a general-purpose agent (Opus, plus `model: haiku` agents as the second model), then `uv run python -m pipeline.splits PRIMARY.jsonl SECOND.jsonl` writes `splits.tsv` and prints agreement. The guide's text and output format are in the git history of this file's commit and implied by `pipeline/splits.py` (`{"id", "forms": [{"n", "probabilities", "none_fit"}]}`).
 - `uv run python -m pipeline.lessons` checks the grammar graph: references, cycles, required fields per kind, and that the seed order lists every item once, after its prerequisites. A test runs the same check.
 
 ## Findings
@@ -66,7 +71,7 @@ From `server/`:
 - Uses no rule finds (the noun-modifying clauses, the imperative, でも, ことがある) have frequency 0 and so rank last until the model pass finds them; relative clauses in particular will not be taught early before then.
 - Only formations and systems take their dependents' rank (009). An authored prerequisite rarer than its dependent holds the dependent back (けど before が as but); either the edge goes or the rule extends to every prerequisite.
 - Marks are ordered by doubt but not yet by frequency within it, and a withdrawn mark does not bring its stage's other marks due: core has the graph, not the stages (014).
-- A tick on an item that already has faded reviews does nothing (013: memory comes from reviews). 014 records a reading-check answer on such an item as a review; whether a tick should count the same way is the owner's call.
+- A tick on an item that already has faded reviews does nothing (013: memory comes from reviews). Recommended, and not yet answered by the owner: leave it so, since those cards are already overdue and come first, and one review session fixes the numbers.
 - に has uses the list lacks: the cause of a feeling (知らせに驚く) and a standard (その場にふさわしい). Labellers marked them none fit.
 - Members of a system that are words (こそあど words, counters) have no link to their system yet, so "a system before its members" (009) covers only grammar members.
 
@@ -79,4 +84,5 @@ From `server/`:
 - The owner's feedback is blunt and meant literally. Fix what they name without overcorrecting elsewhere, and push back with reasons when they seem wrong.
 - Replies are plain and short. Each change ends with the decisions it made.
 - Before a compaction or a new session, bring this file up to date and push.
+- Model work the session itself can do (labelling, drafting, checking) is done by agents in-session rather than through the paid API, as the owner prefers; the API is for the full library.
 - The owner knows about 1,400 words with weak grammar, and their first language, Turkish, shares Japanese sentence structure. They code mostly in C++ and want succinct code and plain explanations.
