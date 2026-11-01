@@ -35,6 +35,7 @@ One name per concept. Code, comments and documents use these and no synonyms.
 | Study day | A local date that starts at the learner's chosen hour. |
 | Due | A card is due on a study day when its recall chance would fall below the retention target by the end of that day, or when a lookup made it due. |
 | Overdue | Due on an earlier study day and not yet reviewed. |
+| Learning step | A repetition of a card on the day it was learned or failed, before it is in review; it comes once due (013). |
 | Learned | First reviewed. |
 | Graduated | Passed on a study day after the one it was learned, or given a starting memory by Marked known. |
 | Lapse | A failed review of a graduated card that was not overdue. |
@@ -49,3 +50,4 @@ One name per concept. Code, comments and documents use these and no synonyms.
 | Pack | The read-only build of one language's library and items. |
 | Ranking | Each item's frequency and most common spelling, computed once from a pack. |
 | Plan | What a learner does on one study day: reviews, re-teaching, new cards and passages. |
+| Settled | A grammar use in one passage when it is certain there: a rule leaves the form one use, or two models agree on the label. Never from a share (013). |
