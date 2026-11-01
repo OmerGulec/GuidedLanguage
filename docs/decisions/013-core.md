@@ -23,11 +23,13 @@ An import emits Introduced and Reviewed events for the cards it maps; reviews of
 
 ## Settings
 
-One versioned input: scheduler (FSRS via py-fsrs) parameters and version, retention target (default 0.9), time zone, study-day start, and the named settings: new budget, grammar cap, kanji cap, review cap, reading per day, effort per item kind, source cap, spacing between cards of one item, lapses before suspension, starting memory and spread for marked items. Defaults live in one settings file. Derivation applies the current settings to the whole history, so changing them is deliberate. Randomness is seeded. Elapsed time is measured between instants.
+One versioned input: scheduler (FSRS via py-fsrs) parameters and version, retention target (default 0.9), time zone, study-day start, and the named settings: new budget, grammar cap, kanji cap, review cap, reading per day, effort per item kind, source cap, spacing between cards of one item, lapses before suspension, starting memory and spread for marked items, the doubtful period. Defaults live in one settings file. Derivation applies the current settings to the whole history, so changing them is deliberate. Randomness is seeded. Elapsed time is measured between instants.
 
 ## Memory
 
 - A card's memory comes only from self-graded and typed reviews, with one exception: Marked known gives an item's first rung a starting memory as if learned long ago, if it has no reviews, and that card counts as graduated. Starting memories are spread evenly over the set period in a seeded order. Later rungs start fresh.
+- A marked item's first card comes up for review from that starting memory. A mark nobody has checked (by hand, from a course table) keeps its memory but falls due within the doubtful period instead; marks from a passed placement check or an import fall due when their memory says (014).
+- A failed first review of a marked item withdraws the mark: its memory restarts from that review and the item is re-taught, as a suspended one is. Marked items that build on it fall due the next study day (014).
 - Marked unknown undoes an earlier mark; reviews are kept, and an item never introduced returns to the candidates.
 - LookedUp, Missed and a failed exercise on its clue items make the item's first rung due the next study day. Multiple choice, reading and passed exercises change nothing.
 - After the set number of lapses since it was last re-taught, a card is suspended. Re-teaching resumes it with its memory kept and makes it due.
@@ -35,7 +37,7 @@ One versioned input: scheduler (FSRS via py-fsrs) parameters and version, retent
 
 ## Cards
 
-Cards are derived, not created: items introduced or marked known × current goals × ladders (004). The first rung in the learner's goals is available when the item is introduced; each later one unlocks when the previous one in the goals graduates, then waits among the candidates (009). After any review of an item, its other cards wait the set spacing; a due set by a lookup overrides it.
+Cards are derived, not created: items introduced or marked known × current goals × ladders (004). The first rung in the learner's goals is available when the item is introduced; each later one unlocks when the previous one in the goals graduates, then waits among the candidates (009). After any review of an item, its other cards wait the set spacing; a due set by a lookup overrides it. A system has no cards: candidates offer it by its item id, and it counts as known once introduced.
 
 ## Value and unknowns
 

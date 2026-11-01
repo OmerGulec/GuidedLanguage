@@ -1,6 +1,6 @@
 # 014 — Placement
 
-Status: accepted. The two changes to 013 at the end wait for the owner's approval of the `core/` change that makes them.
+Status: accepted.
 
 **Why.** Many learners arrive with vocabulary (an Anki deck, a word list, Renshuu) and no idea which grammar they know. Knowing a form's name says little about reading it right: someone who knows ている may still read 死んでいる as "is dying". What a learner can judge is whether they understood a sentence, so placement asks that.
 
@@ -17,8 +17,8 @@ Status: accepted. The two changes to 013 at the end wait for the owner's approva
 
 **4. Corrections afterwards.** A lookup or miss in the reader makes a grammar item due (013); every lesson has "I already know this". Placement only needs to be roughly right, because:
 
-- First reviews of marks come in order of doubt: untested marks first, most frequent first, within about three weeks; marks passed in the check later.
-- A failed review of a placement mark withdraws the mark, so memory restarts from real reviews, and re-teaches the item; the item's marked dependents and its stage's untested marks become due the next study day.
+- First reviews of marks come in order of doubt: untested marks within about three weeks; marks passed in the check later.
+- A failed first review of a mark withdraws it, so memory restarts from real reviews, and re-teaches the item; the item's marked dependents become due the next study day.
 - How often each source's marks fail their first review is tracked; a course table's rows that fail often are revised. The same number measures placement as a whole.
 
 **Scope.** Grammar uses and formations are marked known; systems are introduced (009). Words come from imports and "I already know this word". Placement covers reading; production rungs come with the goals that have them. An answer in the check on an item that already has reviews (an import that has faded) is recorded as a review of its sentence card, since it is the same card under the same rule.
@@ -28,4 +28,4 @@ Status: accepted. The two changes to 013 at the end wait for the owner's approva
 **Changes to earlier decisions.**
 
 - 009's placement, a quick check for systems and structures, becomes this decision and covers all grammar.
-- 013, with the owner's approval of the `core/` change: starting memories of marks are ordered by doubt rather than spread in a seeded order over the set period; a failed review of a placement mark withdraws it and re-teaches, rather than counting as a lapse.
+- 013: a mark nobody has checked falls due within the doubtful period; a failed first review of any mark withdraws it and re-teaches the item, rather than counting as a lapse. Marks are ordered by doubt but not yet by frequency within it, and a withdrawal brings due the item's marked dependents but not its stage's other marks: core knows the graph, not the stages.
