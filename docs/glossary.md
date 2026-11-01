@@ -25,7 +25,8 @@ One name per concept. Code, comments and documents use these and no synonyms.
 | Explanation step | The short "why it means this" shown once a chunk's parts are known. |
 | Source | Where passages come from, with license and display policy. |
 | Passage | A short self-contained text, identified by a hash of source and normalised text. |
-| Occurrence | An item at a span of a passage, in a given spelling. |
+| Occurrence | An item at a span of a passage, in a given spelling, with the probability that it is the item meant: 1 for a word, a share for each possible use of a grammar form. |
+| Grammar rule | A token pattern over the analyser's output that finds a form and lists the uses it may have (`content/ja/grammar/rules.tsv`). |
 | Modality | Reading or listening. |
 | Difficulty | A passage's number of items, then its deepest nesting (008). |
 | Event | Something that happened to a learner. Append-only. |
