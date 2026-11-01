@@ -36,7 +36,7 @@ def words(text: str, analyser: Analyser, lexicon: Lexicon, grammar: Grammar) -> 
 def test_words_a_form_is_made_of_are_left_to_it_and_words_it_frames_stay(
     analyser: Analyser, lexicon: Lexicon, grammar: Grammar
 ) -> None:
-    assert words("分かることがある。", analyser, lexicon, grammar) == ["分かる"]
+    assert words("分かることができる。", analyser, lexicon, grammar) == ["分かる"]
     assert words("分かっている。", analyser, lexicon, grammar) == ["分かっ"]
     assert words("お分かりになる。", analyser, lexicon, grammar) == ["分かり"]
 

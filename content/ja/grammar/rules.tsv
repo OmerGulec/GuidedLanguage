@@ -18,6 +18,8 @@
 と:格助詞 (いう:動詞)	to.quote toiu.called toiu.content
 と:接続助詞	to-conditional.whenever to-conditional.discovery
 と:格助詞 か:副助詞	toka
+# 何とか, somehow, is a word.
+(何:代名詞) と:格助詞 か:副助詞
 や:副助詞	ya
 など:副助詞	nado
 の:格助詞	no.link relative.no-as-subject
@@ -82,6 +84,7 @@
 だ:助動詞:連用形-融合 ない:形容詞 か:終助詞	janai
 で:格助詞 は:係助詞 ない:形容詞 か:終助詞	janai
 の:準体助詞 で:格助詞 は:係助詞 ない:形容詞	janai
+の:準体助詞 だ:助動詞:連用形 は:係助詞 ない:形容詞	janai
 だ:助動詞:連用形-融合 ある:動詞 ます:助動詞 ず:助動詞	nai
 で:格助詞 は:係助詞 ある:動詞 ます:助動詞 ず:助動詞	nai
 
@@ -161,16 +164,13 @@
 (*:動詞:連体形) こと:名詞	koto
 (た|ない:助動詞:連体形) こと:名詞	koto
 た:助動詞 こと:名詞 が:格助詞 ある:動詞	ta-koto-ga-aru
-(*:動詞:連体形) こと:名詞 が:格助詞 ある:動詞	koto-ga-aru
 こと:名詞 が:格助詞 できる:動詞	koto-ga-dekiru
 こと:名詞 に:格助詞 する:動詞	koto-ni-suru
 こと:名詞 に:格助詞 なる:動詞	koto-ni-naru
 (*:連体形) とき:名詞	toki
 (の:格助詞) とき:名詞	toki
 (*:連体形) あいだ:名詞	aida.throughout aida.within
-(の:格助詞) あいだ:名詞	aida.throughout aida.within
 (*:連体形) あいだ:名詞 に:格助詞	aida.within
-(の:格助詞) あいだ:名詞 に:格助詞	aida.within
 (*:動詞:連体形) まえ:名詞 に:格助詞	mae-ni
 (た:助動詞) あと:名詞 で:格助詞	ato-de
 (た:助動詞) あと:名詞	ato-de
