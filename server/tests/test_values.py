@@ -72,7 +72,7 @@ def test_a_marked_items_first_rung_continues_from_its_starting_memory() -> None:
 
 
 def test_starting_memories_fall_due_spread_over_the_set_period() -> None:
-    mark = Mark("known", at(1, 9))
+    mark = Mark("known", at(1, 9), "import")
     shortest = timedelta(days=TOKYO.marked_stability_days)
     longest = shortest + timedelta(days=TOKYO.marked_spread_days)
 

@@ -55,7 +55,8 @@ class Missed:
 class Marked:
     item: str
     status: Literal["known", "ignored", "unknown"]
-    reason: Literal["hand", "placement", "import"]
+    # placement: passed in the reading check; course: from a course table (014).
+    reason: Literal["hand", "placement", "course", "import"]
 
 
 @dataclass(frozen=True, slots=True)

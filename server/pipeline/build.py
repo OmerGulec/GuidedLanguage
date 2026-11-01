@@ -5,7 +5,7 @@ from collections.abc import Iterable, Iterator, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 
-from core.pack import GrammarUse, Occurrence, Passage, Source, Word, passage_id
+from core.pack import GrammarItem, Occurrence, Passage, Source, Word, passage_id
 from langs.ja.analyser import Analyser, Lexicon, Link, Token, read_readings, word
 from langs.ja.checks import check_links
 from langs.ja.dictionary import read_jmdict
@@ -42,8 +42,11 @@ def build() -> None:
     lexicon = Lexicon(entries, read_readings(CONTENT / "readings.tsv"))
     analyser = Analyser()
     grammar = Grammar(read_rules(grammar_rules.RULES))
-    lessons = read_lessons(GRAMMAR).values()
-    uses = [GrammarUse(u.id, u.header.nuance) for u in lessons if u.header.kind == "use"]
+    graph = [
+        GrammarItem(i.id, i.header.kind, tuple(i.prerequisites), i.header.nuance)
+        for i in read_lessons(GRAMMAR).values()
+        if i.header.kind != "form"
+    ]
     words = {w.id: w for w in map(word, entries)}
     unresolved: set[str] = set()
     passages: dict[str, Passage] = {}
@@ -68,7 +71,7 @@ def build() -> None:
         "analyser": "fugashi + unidic-lite",
         "dictionary": "JMdict_e",
     }
-    write_pack(PACK, meta, [TATOEBA], words.values(), uses, passages.values(), occurrences)
+    write_pack(PACK, meta, [TATOEBA], words.values(), graph, passages.values(), occurrences)
     report(words, unresolved, len(passages), occurrences)
     print(f"written {PACK}")
 

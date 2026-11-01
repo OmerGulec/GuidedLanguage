@@ -1,8 +1,8 @@
-from collections.abc import Mapping, Set
+from collections.abc import Iterable, Mapping, Set
 
 import numpy as np
 
-from core.pack import Column, Pack
+from core.pack import Column, GrammarItem, Pack
 
 
 def pack_of(
@@ -10,10 +10,15 @@ def pack_of(
     probabilities: Mapping[Column, float] | None = None,
     grammar: Set[str] = frozenset(),
     nuance: Set[str] = frozenset(),
+    graph: Iterable[GrammarItem] = (),
 ) -> Pack:
+    """A pack of the given passages. `grammar` names uses with no prerequisites; `graph` adds
+    grammar items in full."""
     columns = list(dict.fromkeys(c for passage in passages for c in passage))
     appearances = [(p, columns.index(c)) for p, passage in enumerate(passages) for c in passage]
     chances = probabilities or {}
+    items = {use: GrammarItem(use, "use", (), use in nuance) for use in grammar}
+    items |= {item.id: item for item in graph}
     return Pack(
         passages=tuple(f"p{i}" for i in range(len(passages))),
         sources=("tatoeba",),
@@ -24,6 +29,5 @@ def pack_of(
         appearance_probabilities=np.array(
             [chances.get(columns[c], 1.0) for _, c in appearances], dtype=np.float64
         ),
-        grammar=frozenset(grammar),
-        nuance=frozenset(nuance),
+        grammar=items,
     )

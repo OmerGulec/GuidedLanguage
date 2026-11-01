@@ -116,12 +116,16 @@ class Simulation:
                 passed = self._answer(card, now)
                 payloads.append(Reviewed(card, passed, "self"))
                 reviews, failed = reviews + 1, failed + (not passed)
-            for card in today.new:
-                for item in Card.parse(card).items:
+            for offer in today.new:
+                new += 1
+                # A system has no cards: it is offered by its item id and only shown.
+                if offer in self.pack.grammar:
+                    payloads.append(Introduced(offer, "new"))
+                    continue
+                for item in Card.parse(offer).items:
                     if item not in self.state.introduced:
                         payloads.append(Introduced(item, "new"))
-                payloads.append(Reviewed(card, self._answer(card, now), "self"))
-                new += 1
+                payloads.append(Reviewed(offer, self._answer(offer, now), "self"))
             if session == 0:
                 for modality, passages in today.passages.items():
                     payloads.extend(self._read(passages, modality, now))

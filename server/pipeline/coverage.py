@@ -19,7 +19,7 @@ MEASURED_AT = datetime(2026, 1, 2, tzinfo=UTC)
 def report() -> None:
     pack = read_pack(PACK)
     settings = Settings()
-    order = ranked(ranking(pack).frequency, excluded=frozenset())
+    order = ranked(ranking(pack, settings).frequency, excluded=frozenset())
 
     print("words known  fully known  one unknown")
     for count in KNOWN_WORDS:

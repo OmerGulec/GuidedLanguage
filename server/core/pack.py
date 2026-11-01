@@ -1,5 +1,6 @@
 import hashlib
 import unicodedata
+from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Literal
 
@@ -7,6 +8,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 type Display = Literal["full", "excerpt", "analysis"]
+type GrammarKind = Literal["use", "formation", "system"]
 
 PASSAGE_ID_LENGTH = 16
 
@@ -29,8 +31,11 @@ class Word:
 
 
 @dataclass(frozen=True, slots=True)
-class GrammarUse:
+class GrammarItem:
     id: str
+    kind: GrammarKind
+    # What must be known first (009); a system counts once it has been introduced.
+    prerequisites: tuple[str, ...]
     # Nuance never counts as unknown (007).
     nuance: bool
 
@@ -79,5 +84,4 @@ class Pack:
     appearance_passages: NDArray[np.int32]
     appearance_columns: NDArray[np.int32]
     appearance_probabilities: NDArray[np.float64]
-    grammar: frozenset[str]
-    nuance: frozenset[str]
+    grammar: Mapping[str, GrammarItem]

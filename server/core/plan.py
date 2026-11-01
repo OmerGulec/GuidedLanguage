@@ -6,13 +6,13 @@ from datetime import date, datetime, timedelta
 import numpy as np
 from numpy.typing import NDArray
 
-from core.candidates import Ranking, candidates
-from core.cards import FIRST_RUNGS, RUNGS, Card, Goal
+from core.candidates import LADDER_OF, Ranking, candidates
+from core.cards import FIRST_RUNGS, LADDERS, RUNGS, Card, Goal
 from core.days import next_boundary, study_day
 from core.events import Modality
 from core.pack import Pack
 from core.settings import Settings
-from core.state import State
+from core.state import State, starting
 
 LISTENING_GOALS: frozenset[Goal] = frozenset({"listener", "complete"})
 
@@ -45,23 +45,38 @@ def plan(
     reteach = sorted({item for items in suspended for item in items})
 
     # New items spend the new budget; rungs that unlocked get an equal allowance of their own,
-    # so a goal with more rungs adds cards without slowing the pace of new words.
+    # so a goal with more rungs adds cards without slowing the pace of new words. New grammar
+    # also spends the grammar cap.
     today = study_day(now, settings)
-    started = Counter(
-        Card.parse(card).rung in FIRST_RUNGS
-        for card, held in state.cards.items()
-        if held.learned == today
-    )
+    learned_today = [
+        Card.parse(card) for card, held in state.cards.items() if held.learned == today
+    ]
+    shown_today = [
+        item
+        for item, at in state.introduced.items()
+        if _system(item, ranking) and study_day(at, settings) == today
+    ]
+    started = Counter(card.rung in FIRST_RUNGS for card in learned_today)
     allowance = {
-        True: max(0, settings.new_budget - started[True] - len(reteach)),
+        True: max(0, settings.new_budget - started[True] - len(shown_today) - len(reteach)),
         False: max(0, settings.new_budget - started[False]),
     }
+    grammar_started = sum(
+        card.rung in FIRST_RUNGS and card.items[0] in ranking.grammar for card in learned_today
+    )
+    grammar_left = max(0, settings.grammar_cap - grammar_started - len(shown_today))
     new: list[str] = []
-    for card in candidates(state, ranking, goal):
-        first = Card.parse(card).rung in FIRST_RUNGS
-        if allowance[first] > 0 and _possible(card, situation):
-            new.append(card)
+    for offer in candidates(state, ranking, goal):
+        system = _system(offer, ranking)
+        card = None if system else Card.parse(offer)
+        first = card is None or card.rung in FIRST_RUNGS
+        grammar = first and (card is None or card.items[0] in ranking.grammar)
+        if allowance[first] == 0 or (grammar and grammar_left == 0):
+            continue
+        if card is None or _possible(offer, situation):
+            new.append(offer)
             allowance[first] -= 1
+            grammar_left -= grammar
 
     modalities: list[Modality] = ["reading"]
     if goal in LISTENING_GOALS and situation.sound:
@@ -73,6 +88,21 @@ def plan(
         new=tuple(new),
         passages={m: _passages(unknowns[m], pack, state.read[m], settings) for m in modalities},
     )
+
+
+def _system(offer: str, ranking: Ranking) -> bool:
+    """A system is offered by its item id, having no cards."""
+    item = ranking.grammar.get(offer)
+    return item is not None and item.kind == "system"
+
+
+def _first_card(item: str, ranking: Ranking) -> str | None:
+    grammar = ranking.grammar.get(item)
+    if grammar is None:
+        return Card((item,), ranking.spellings.get(item), LADDERS["word"][0].name).id
+    if grammar.kind == "system":
+        return None
+    return Card((item,), None, LADDERS[LADDER_OF[grammar.kind]][0].name).id
 
 
 def _possible(card: str, situation: Situation) -> bool:
@@ -111,7 +141,7 @@ def _reviews(
         for held in state.cards.values()
     )
     steps: list[str] = []
-    due: list[tuple[bool, int, str]] = []
+    due: list[tuple[bool, float, str]] = []
     for card_id, held in state.cards.items():
         card = Card.parse(card_id)
         # Cards outside the goal, such as imported ones, are kept but not reviewed (013).
@@ -130,6 +160,27 @@ def _reviews(
         elif made_due or scheduled:
             frequency = max(ranking.frequency.get(item, 0) for item in card.items)
             due.append((not made_due, -frequency, card_id))
+
+    # A marked item's first card comes due from its starting memory (013, 014). It comes the
+    # next study day if a lookup made it due or a mark it builds on was withdrawn.
+    first_held = {
+        item
+        for card in map(Card.parse, state.cards)
+        if card.rung in FIRST_RUNGS
+        for item in card.items
+    }
+    for item, mark in state.marks.items():
+        card_id = _first_card(item, ranking)
+        if mark.status != "known" or card_id is None or item in first_held:
+            continue
+        grammar = ranking.grammar.get(item)
+        prerequisites = () if grammar is None else grammar.prerequisites
+        made_due = state.made_due.get(item, date.max) <= today or any(
+            state.withdrawn.get(p, date.max) < today for p in prerequisites
+        )
+        scheduled = starting(item, mark, settings).memory.due < end_of_day
+        if made_due or scheduled:
+            due.append((not made_due, -ranking.frequency.get(item, 0), card_id))
 
     due.sort()
     capped = due[: max(0, settings.review_cap - reviewed_today)]

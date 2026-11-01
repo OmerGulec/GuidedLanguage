@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 
-from core.pack import Column, GrammarUse, Occurrence, Pack, Passage, Source, Word
+from core.pack import Column, GrammarItem, Occurrence, Pack, Passage, Source, Word
 
 SCHEMA = """
 CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
@@ -21,7 +21,9 @@ CREATE TABLE passages (
     id TEXT PRIMARY KEY, source TEXT NOT NULL REFERENCES sources,
     position INTEGER NOT NULL, text TEXT NOT NULL
 );
-CREATE TABLE grammar (id TEXT PRIMARY KEY, nuance INTEGER NOT NULL);
+CREATE TABLE grammar (
+    id TEXT PRIMARY KEY, kind TEXT NOT NULL, prerequisites TEXT NOT NULL, nuance INTEGER NOT NULL
+);
 CREATE TABLE occurrences (
     passage TEXT NOT NULL REFERENCES passages, item TEXT NOT NULL, spelling TEXT NOT NULL,
     phonetic INTEGER NOT NULL, start INTEGER NOT NULL, end INTEGER NOT NULL,
@@ -36,7 +38,7 @@ def write_pack(
     meta: Mapping[str, str],
     sources: Iterable[Source],
     words: Iterable[Word],
-    grammar: Iterable[GrammarUse],
+    grammar: Iterable[GrammarItem],
     passages: Iterable[Passage],
     occurrences: Iterable[Occurrence],
 ) -> None:
@@ -56,7 +58,10 @@ def write_pack(
                 for w in words
             ),
         )
-        db.executemany("INSERT INTO grammar VALUES (?, ?)", ((g.id, g.nuance) for g in grammar))
+        db.executemany(
+            "INSERT INTO grammar VALUES (?, ?, ?, ?)",
+            ((g.id, g.kind, _json(g.prerequisites), g.nuance) for g in grammar),
+        )
         db.executemany(
             "INSERT INTO passages VALUES (?, ?, ?, ?)",
             ((p.id, p.source, p.position, p.text) for p in passages),
@@ -121,7 +126,10 @@ def read_pack(path: Path) -> Pack:
             "SELECT passage, item, CASE WHEN phonetic THEN NULL ELSE spelling END AS written,"
             " MAX(probability) FROM occurrences GROUP BY passage, item, written"
         ).fetchall()
-        grammar = db.execute("SELECT id, nuance FROM grammar").fetchall()
+        grammar = [
+            GrammarItem(id, kind, tuple(json.loads(prerequisites)), bool(nuance))
+            for id, kind, prerequisites, nuance in db.execute("SELECT * FROM grammar")
+        ]
 
     source_index = {source: i for i, source in enumerate(sources)}
     passage_index = {passage: i for i, (passage, _) in enumerate(passages)}
@@ -141,8 +149,7 @@ def read_pack(path: Path) -> Pack:
         ),
         appearance_columns=np.array(appearance_columns, dtype=np.int32),
         appearance_probabilities=np.array([p for *_, p in appearances], dtype=np.float64),
-        grammar=frozenset(use for use, _ in grammar),
-        nuance=frozenset(use for use, nuance in grammar if nuance),
+        grammar={item.id: item for item in grammar},
     )
 
 

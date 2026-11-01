@@ -18,8 +18,8 @@ DAYS_PER_MONTH = 30
 
 def report() -> None:
     pack = read_pack(PACK)
-    pack_ranking = ranking(pack)
     settings = Settings()
+    pack_ranking = ranking(pack, settings)
     learners = [
         (Learner("regular", seed=3), settings),
         (

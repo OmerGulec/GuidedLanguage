@@ -1,4 +1,5 @@
 from dataclasses import replace
+from typing import Literal
 
 import numpy as np
 from numpy.typing import NDArray
@@ -6,7 +7,7 @@ from numpy.typing import NDArray
 from core.candidates import candidates, ranking
 from core.cards import Card
 from core.events import Event, Introduced, LookedUp, Marked, Modality, Reviewed
-from core.pack import Column
+from core.pack import Column, GrammarItem
 from core.plan import Plan, Situation, plan
 from core.settings import Settings
 from core.state import derive
@@ -24,7 +25,7 @@ PACK = pack_of(
     (KOTO_IN_KANA,),
     (KOTO_IN_KANA,),
 )
-RANKING = ranking(PACK)
+RANKING = ranking(PACK, TOKYO)
 RECOGNIZE = Card((WAKARU,), "分かる", "recognize").id
 LISTEN = Card((WAKARU,), None, "listen").id
 KOTO_RECOGNIZE = Card((KOTO,), None, "recognize").id
@@ -48,13 +49,6 @@ def planned(history: list[Event], day: int, settings: Settings = TOKYO, **situat
     return plan(
         state, unknowns, PACK, RANKING, "listener", Situation(**situation), settings, at(day, 20)
     )
-
-
-def test_grammar_is_not_ranked_among_words() -> None:
-    topic = Column("wa.topic", None)
-    assert ranking(pack_of((IN_KANJI, topic), (topic,), grammar={topic.item})).frequency == {
-        WAKARU: 1
-    }
 
 
 def test_new_items_start_in_their_most_common_spelling_most_frequent_first() -> None:
@@ -170,8 +164,83 @@ def test_reading_takes_the_fewest_unknowns_then_the_easiest_and_skips_read_passa
         today = replace(state, read={"reading": read, "listening": frozenset()})
         both: dict[Modality, NDArray[np.float64]] = {"reading": unknowns, "listening": unknowns}
         return plan(
-            today, both, pack, ranking(pack), "reader", Situation(), settings, at(1, 9)
+            today, both, pack, ranking(pack, settings), "reader", Situation(), settings, at(1, 9)
         ).passages["reading"]
 
     assert picks(frozenset()) == ("p2", "p1", "p0")
     assert picks(frozenset({"p2"})) == ("p1", "p0", "p3")
+
+
+# Grammar: a system, a formation built on it, a frequent use built on the formation, a use
+# that needs nothing, and a word.
+SHAPE = GrammarItem("verb-classes", "system", (), nuance=False)
+TE = GrammarItem("te-ta", "formation", ("verb-classes",), nuance=False)
+TEIRU = GrammarItem("teiru.ongoing", "use", ("te-ta",), nuance=False)
+TOPIC = GrammarItem("wa.topic", "use", (), nuance=False)
+GRAMMAR_PACK = pack_of(
+    *[(Column(TEIRU.id, None), Column(TOPIC.id, None), IN_KANJI)] * 9,
+    (KOTO_IN_KANA,),
+    graph=[SHAPE, TE, TEIRU, TOPIC],
+)
+GRAMMAR_RANKING = ranking(GRAMMAR_PACK, TOKYO)
+TEIRU_SENTENCE = Card((TEIRU.id,), None, "sentence").id
+TOPIC_SENTENCE = Card((TOPIC.id,), None, "sentence").id
+TE_UNDO = Card((TE.id,), None, "undo").id
+
+
+def grammar_plan(history: list[Event], day: int, settings: Settings = TOKYO) -> Plan:
+    nothing: NDArray[np.float64] = np.zeros(len(GRAMMAR_PACK.passages))
+    unknowns: dict[Modality, NDArray[np.float64]] = {"reading": nothing, "listening": nothing}
+    state = derive(history, settings)
+    return plan(
+        state, unknowns, GRAMMAR_PACK, GRAMMAR_RANKING, "reader", Situation(), settings, at(day, 20)
+    )
+
+
+def test_rank_is_frequency_over_effort_and_building_blocks_take_their_best_dependent() -> None:
+    rank = GRAMMAR_RANKING.rank
+    assert rank[WAKARU] == 9 and rank[TOPIC.id] == rank[TEIRU.id] == 9 / TOKYO.grammar_effort
+    assert rank[TE.id] == rank[SHAPE.id] == rank[TEIRU.id]
+    halved = pack_of(
+        (Column(TOPIC.id, None),) * 1,
+        probabilities={Column(TOPIC.id, None): 0.5},
+        grammar={TOPIC.id},
+    )
+    assert ranking(halved, TOKYO).frequency == {TOPIC.id: 0.5}
+
+
+def test_grammar_waits_for_what_it_builds_on_and_a_system_is_offered_by_its_id() -> None:
+    def offered(history: list[Event]) -> list[str]:
+        return candidates(derive(history, TOKYO), GRAMMAR_RANKING, "reader")
+
+    assert offered([]) == [RECOGNIZE, SHAPE.id, TOPIC_SENTENCE, KOTO_RECOGNIZE]
+    shown = [event(at(1, 8), Introduced(SHAPE.id, "new"))]
+    assert TE_UNDO in offered(shown) and TEIRU_SENTENCE not in offered(shown)
+    formed = [*shown, *learned(TE_UNDO, TE.id)]
+    assert TEIRU_SENTENCE in offered(formed)
+
+
+def test_new_grammar_spends_the_new_budget_and_stops_at_the_grammar_cap() -> None:
+    settings = replace(TOKYO, grammar_cap=1, new_budget=3)
+    assert grammar_plan([], 1, settings).new == (RECOGNIZE, SHAPE.id, KOTO_RECOGNIZE)
+    shown = [event(at(1, 9), Introduced(SHAPE.id, "new"))]
+    assert grammar_plan(shown, 1, settings).new == (RECOGNIZE, KOTO_RECOGNIZE)
+
+
+def test_a_marked_item_comes_up_for_review_sooner_when_nobody_checked_it() -> None:
+    def first_due(reason: Literal["hand", "import"]) -> int:
+        history = [event(at(1, 8), Marked(TOPIC.id, "known", reason))]
+        return next(d for d in range(1, 200) if TOPIC_SENTENCE in grammar_plan(history, d).reviews)
+
+    assert first_due("hand") <= TOKYO.doubtful_review_days + 1
+    assert first_due("import") > TOKYO.marked_stability_days
+
+
+def test_a_failed_first_review_withdraws_the_mark_reteaches_and_brings_its_dependents_due() -> None:
+    marks = [event(at(1, 8), Marked(i, "known", "hand")) for i in (SHAPE.id, TE.id, TEIRU.id)]
+    history = [*marks, review(TE_UNDO, 2, passed=False)]
+    state = derive(history, TOKYO)
+    assert TE.id not in state.marks and TEIRU.id in state.marks
+    assert grammar_plan(history, 2).reteach == (TE.id,)
+    assert TEIRU_SENTENCE not in grammar_plan(history, 2).reviews
+    assert TEIRU_SENTENCE in grammar_plan(history, 3).reviews

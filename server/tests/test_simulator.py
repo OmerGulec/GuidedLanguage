@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from core.candidates import Ranking, candidates, ranking
+from core.candidates import Ranking, candidates, offered_item, ranking
 from core.cards import Card
 from core.pack import Pack
 from core.settings import Settings
@@ -16,7 +16,7 @@ from store.pack import read_pack
 
 SETTINGS = Settings()
 PACK = read_pack(Path(__file__).parent / "fixtures" / "pack.sqlite")
-RANKING = ranking(PACK)
+RANKING = ranking(PACK, Settings())
 
 
 @pytest.fixture(scope="module")
@@ -76,5 +76,5 @@ def test_imported_words_count_as_known_and_are_not_taught_again() -> None:
         return float(unknowns(values(simulation.state, PACK, SETTINGS, at, "reading"), PACK).sum())
 
     assert total_unknowns(imported) < total_unknowns(fresh)
-    offered = {Card.parse(card).items[0] for card in candidates(imported.state, RANKING, "reader")}
+    offered = {offered_item(o, RANKING) for o in candidates(imported.state, RANKING, "reader")}
     assert not offered & set(imported.state.marks)

@@ -46,10 +46,11 @@ def values(
     ignored = {item for item, mark in state.marks.items() if mark.status == "ignored"}
 
     def column_value(item: str, spelling: str | None) -> float:
-        if item in ignored or item in pack.nuance:
+        grammar = pack.grammar.get(item)
+        if item in ignored or (grammar is not None and grammar.nuance):
             return 1.0
         # A grammar use is understood by ear as by eye through its sentence card (013).
-        if item in pack.grammar:
+        if grammar is not None:
             return by_sentence.get(item, known_without_reviews.get(item, 0.0))
         if modality == "listening":
             return by_ear.get(item, 0.0)

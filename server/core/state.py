@@ -23,6 +23,8 @@ from core.settings import Settings
 
 # Midway on the scheduler's 1 to 10 difficulty scale, for memories that never had a review.
 STARTING_DIFFICULTY = 5.0
+# Marks nobody has checked: their first review comes sooner (014).
+DOUBTFUL = frozenset({"hand", "course"})
 
 
 @dataclass(frozen=True, slots=True)
@@ -39,6 +41,7 @@ class CardState:
 class Mark:
     status: Literal["known", "ignored"]
     at: datetime
+    reason: Literal["hand", "placement", "course", "import"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -49,9 +52,11 @@ class State:
     # Items whose first rung a lookup, miss or failed exercise made due on a study day.
     made_due: Mapping[str, date]
     read: Mapping[Modality, frozenset[str]]
+    # Items whose mark a failed first review withdrew, by study day (014).
+    withdrawn: Mapping[str, date]
 
 
-EMPTY = State({}, {}, {}, {}, {"reading": frozenset(), "listening": frozenset()})
+EMPTY = State({}, {}, {}, {}, {"reading": frozenset(), "listening": frozenset()}, {})
 
 
 def derive(events: Iterable[Event], settings: Settings) -> State:
@@ -73,6 +78,7 @@ def advance(state: State, events: Iterable[Event], settings: Settings) -> State:
     cards = dict(state.cards)
     made_due = dict(state.made_due)
     read: dict[Modality, set[str]] = {m: set(p) for m, p in state.read.items()}
+    withdrawn = dict(state.withdrawn)
 
     for event in sorted(events, key=lambda e: (e.at, e.id)):
         day = study_day(event.at, settings)
@@ -85,8 +91,17 @@ def advance(state: State, events: Iterable[Event], settings: Settings) -> State:
                             cards[card] = replace(held, lapses=0, suspended=False)
                     made_due[item] = day
             case Reviewed(card=card, passed=passed, method=method) if method != "choice":
-                previous = cards.get(card) or _marked_start(card, marks, settings)
-                cards[card] = _reviewed(previous, passed, event.at, settings)
+                marked = None if card in cards else _marked_item(card, marks)
+                if marked is not None and not passed:
+                    # A failed first review refutes the mark: memory restarts from real reviews
+                    # and the item is re-taught, as a suspended one is (014).
+                    del marks[marked]
+                    withdrawn[marked] = day
+                    fresh = _reviewed(None, passed, event.at, settings)
+                    cards[card] = replace(fresh, suspended=True)
+                else:
+                    start = None if marked is None else starting(marked, marks[marked], settings)
+                    cards[card] = _reviewed(cards.get(card) or start, passed, event.at, settings)
                 for item in Card.parse(card).items:
                     made_due.pop(item, None)
             case LookedUp(item=item) | Missed(item=item):
@@ -94,11 +109,11 @@ def advance(state: State, events: Iterable[Event], settings: Settings) -> State:
             case Exercised(passed=False, items=items):
                 for item in items:
                     made_due[item] = day + timedelta(days=1)
-            case Marked(item=item, status=status):
+            case Marked(item=item, status=status, reason=reason):
                 if status == "unknown":
                     marks.pop(item, None)
                 else:
-                    marks[item] = Mark(status, event.at)
+                    marks[item] = Mark(status, event.at, reason)
             case Read(passage=passage, modality=modality):
                 read[modality].add(passage)
             case Reviewed() | Exercised() | Retracted():
@@ -107,34 +122,37 @@ def advance(state: State, events: Iterable[Event], settings: Settings) -> State:
                 assert_never(event.payload)
 
     passages_read: dict[Modality, frozenset[str]] = {m: frozenset(p) for m, p in read.items()}
-    return State(introduced, marks, cards, made_due, passages_read)
+    return State(introduced, marks, cards, made_due, passages_read, withdrawn)
 
 
 def starting(item: str, mark: Mark, settings: Settings) -> CardState:
-    """The memory of a first rung whose item was marked known: as if learned long ago."""
+    """The memory of a first rung whose item was marked known: as if learned long ago. A mark
+    nobody has checked keeps that memory but comes up for review within a few weeks (014)."""
     digest = hashlib.sha256(item.encode()).digest()
-    spread = int.from_bytes(digest[:4]) / 2**32 * settings.marked_spread_days
-    stability = settings.marked_stability_days + spread
+    place = int.from_bytes(digest[:4]) / 2**32
+    stability = settings.marked_stability_days + place * settings.marked_spread_days
+    wait = place * settings.doubtful_review_days if mark.reason in DOUBTFUL else stability
     memory = Memory(
         stability=stability,
         difficulty=STARTING_DIFFICULTY,
         phase="review",
         step=None,
-        due=mark.at + timedelta(days=stability),
+        due=mark.at + timedelta(days=wait),
         last_review=mark.at,
     )
     learned = study_day(mark.at, settings)
     return CardState(memory, learned, graduated=True, passed=True, lapses=0, suspended=False)
 
 
-def _marked_start(card: str, marks: Mapping[str, Mark], settings: Settings) -> CardState | None:
+def _marked_item(card: str, marks: Mapping[str, Mark]) -> str | None:
+    """The item whose mark known gives this first rung its starting memory."""
     parsed = Card.parse(card)
     if parsed.rung not in FIRST_RUNGS:
         return None
     for item in parsed.items:
         mark = marks.get(item)
         if mark is not None and mark.status == "known":
-            return starting(item, mark, settings)
+            return item
     return None
 
 

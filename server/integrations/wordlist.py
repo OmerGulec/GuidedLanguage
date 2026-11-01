@@ -45,7 +45,7 @@ def read_word_list(path: Path) -> list[tuple[str, str | None]]:
 
 
 def match(
-    wanted: Iterable[tuple[str, str | None]], words: Iterable[Word], frequency: Mapping[str, int]
+    wanted: Iterable[tuple[str, str | None]], words: Iterable[Word], frequency: Mapping[str, float]
 ) -> Matches:
     by_form: dict[str, list[Word]] = defaultdict(list)
     for word in words:
@@ -99,7 +99,8 @@ def match(
 
 def report(path: Path) -> None:
     pack, words = read_pack(PACK), read_words(PACK)
-    pack_ranking = ranking(pack)
+    settings = Settings()
+    pack_ranking = ranking(pack, settings)
     matches = match(read_word_list(path), words, pack_ranking.frequency)
     labels = {w.id: w.spellings[0] if w.spellings else w.readings[0] for w in words}
 
@@ -115,7 +116,6 @@ def report(path: Path) -> None:
     marks = [
         Event(f"import-{i}", imported_at, "import", Marked(i, "known", "import")) for i in items
     ]
-    settings = Settings()
     state = derive(marks, settings)
     tomorrow = imported_at + timedelta(days=1)
     per_passage = unknowns(values(state, pack, settings, tomorrow, "reading"), pack)
