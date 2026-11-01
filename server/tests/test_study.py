@@ -6,9 +6,11 @@ import pytest
 from fastapi.testclient import TestClient
 from pydantic import TypeAdapter
 
+from api.app import create_app
 from api.library import GrammarView, PassageView, WordView
 from api.study import CardStep, DoneStep, MeetingStep, PageStep, Step
 from core.settings import Settings
+from tests.packs import FIXTURE
 from tests.server import NOW, OWNER, app_client, owner_database
 
 LONGEST_SESSION = 100
@@ -101,7 +103,7 @@ def test_settings_are_checked_and_take_effect_at_once(client: TestClient) -> Non
     assert STEP.validate_python(client.get("/api/study/next").json()).kind == "done"
 
 
-def test_today_counts_what_is_left_and_what_is_done(client: TestClient) -> None:
+def test_today_counts_what_is_left_and_what_is_done(client: TestClient, tmp_path: Path) -> None:
     budget, passages = Settings().new_budget, Settings().reading_per_day
     fresh = client.get("/api/today").json()
     assert (fresh["reviews"], fresh["new"], fresh["reading"]) == (0, budget, passages)
@@ -114,9 +116,10 @@ def test_today_counts_what_is_left_and_what_is_done(client: TestClient) -> None:
         client.post("/api/events", json=[{"id": f"e{n}", "at": when, "payload": answer(step)}])
 
     after = client.get("/api/today").json()
-    assert (after["reviews"], after["new"], after["reviewed"], after["met"]) == (
-        1,
-        budget - 1,
-        1,
-        1,
-    )
+    left, done = (after["reviews"], after["new"]), (after["reviewed"], after["met"])
+    assert (left, done) == ((1, budget - 1), (1, 1))
+
+    a_day_later = NOW + timedelta(days=1)
+    tomorrow = TestClient(create_app(tmp_path / "users.sqlite", FIXTURE, clock=lambda: a_day_later))
+    tomorrow.post("/api/session", json=OWNER)
+    assert tomorrow.get("/api/today").json()["met"] == 0
