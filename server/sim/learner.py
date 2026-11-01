@@ -126,6 +126,11 @@ class Simulation:
                     if item not in self.state.introduced:
                         payloads.append(Introduced(item, "new"))
                 payloads.append(Reviewed(offer, self._answer(offer, now), "self"))
+            # With nothing else left, steps due later come early, as the app shows them.
+            for card in today.later:
+                passed = self._answer(card, now)
+                payloads.append(Reviewed(card, passed, "self"))
+                reviews, failed = reviews + 1, failed + (not passed)
             if session == 0:
                 for modality, passages in today.passages.items():
                     payloads.extend(self._read(passages, modality, now))

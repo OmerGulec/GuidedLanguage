@@ -1,4 +1,5 @@
 from dataclasses import replace
+from datetime import timedelta
 from typing import Literal
 
 import numpy as np
@@ -137,6 +138,25 @@ def test_the_cap_counts_todays_reviews_but_never_holds_back_learning_steps() -> 
 
     learning = [event(at(5, 8), Introduced(KOTO, "new")), review(KOTO_RECOGNIZE, 5, hour=8)]
     assert planned(learning, 5, replace(TOKYO, review_cap=0)).reviews == (KOTO_RECOGNIZE,)
+
+
+def test_a_learning_step_comes_first_once_due_and_waits_to_last_until_then() -> None:
+    history = [
+        *learned(RECOGNIZE),
+        event(at(30, 9), Introduced(KOTO, "new")),
+        review(KOTO_RECOGNIZE, 30, hour=9),
+    ]
+    state = derive(history, TOKYO)
+    nothing = np.zeros(len(PACK.passages))
+    unknowns: dict[Modality, NDArray[np.float64]] = {"reading": nothing, "listening": nothing}
+
+    def minutes_after(minutes: int) -> Plan:
+        now = at(30, 9) + timedelta(minutes=minutes)
+        return plan(state, unknowns, PACK, RANKING, "reader", Situation(), TOKYO, now)
+
+    soon, later = minutes_after(1), minutes_after(60)
+    assert (soon.reviews, soon.later) == ((RECOGNIZE,), (KOTO_RECOGNIZE,))
+    assert (later.reviews, later.later) == ((KOTO_RECOGNIZE, RECOGNIZE), ())
 
 
 def test_after_a_review_the_items_other_cards_wait_the_spacing() -> None:

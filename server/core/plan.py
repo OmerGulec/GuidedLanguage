@@ -26,6 +26,8 @@ class Situation:
 @dataclass(frozen=True, slots=True)
 class Plan:
     reviews: tuple[str, ...]
+    # Learning steps due later in the study day: shown after everything else.
+    later: tuple[str, ...]
     reteach: tuple[str, ...]
     new: tuple[str, ...]
     passages: Mapping[Modality, tuple[str, ...]]
@@ -82,8 +84,10 @@ def plan(
     if goal in LISTENING_GOALS and situation.sound:
         modalities.append("listening")
 
+    reviews, later = _reviews(state, ranking, goal, situation, settings, now)
     return Plan(
-        reviews=_reviews(state, ranking, goal, situation, settings, now),
+        reviews=reviews,
+        later=later,
         reteach=tuple(reteach),
         new=tuple(new),
         passages={m: _passages(unknowns[m], pack, state.read[m], settings) for m in modalities},
@@ -119,7 +123,8 @@ def _reviews(
     situation: Situation,
     settings: Settings,
     now: datetime,
-) -> tuple[str, ...]:
+) -> tuple[tuple[str, ...], tuple[str, ...]]:
+    """Cards due now, then learning steps due later in the study day."""
     today = study_day(now, settings)
     end_of_day = next_boundary(now, settings)
     spacing = timedelta(days=settings.spacing_days)
@@ -140,7 +145,7 @@ def _reviews(
         study_day(held.memory.last_review, settings) == today and held.learned < today
         for held in state.cards.values()
     )
-    steps: list[str] = []
+    steps: list[tuple[datetime, str]] = []
     due: list[tuple[bool, float, str]] = []
     for card_id, held in state.cards.items():
         card = Card.parse(card_id)
@@ -158,7 +163,7 @@ def _reviews(
         )
         scheduled = held.memory.due < end_of_day and all(spaced(i, card_id) for i in card.items)
         if scheduled and held.memory.phase != "review":
-            steps.append(card_id)
+            steps.append((held.memory.due, card_id))
         elif made_due or scheduled:
             frequency = max(ranking.frequency.get(item, 0) for item in card.items)
             due.append((not made_due, -frequency, card_id))
@@ -189,9 +194,14 @@ def _reviews(
         if made_due or scheduled:
             due.append((not made_due, -ranking.frequency.get(item, 0), card_id))
 
+    # A learning step comes once due, so a just-learned card returns with other cards between.
+    # One due later in the day waits until the rest is done, then comes early rather than
+    # leaving the learner waiting.
+    steps.sort()
     due.sort()
     capped = due[: max(0, settings.review_cap - reviewed_today)]
-    return tuple(sorted(steps)) + tuple(card_id for _, _, card_id in capped)
+    reviews = tuple(card for at, card in steps if at <= now) + tuple(c for _, _, c in capped)
+    return reviews, tuple(card for at, card in steps if at > now)
 
 
 def _passages(

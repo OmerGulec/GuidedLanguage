@@ -77,6 +77,8 @@ A word's first meeting is chosen the same way, so it is the only unknown where t
 2. Explanation steps, re-teaching and candidates until the new budget is spent (009).
 3. Reading: the set number of passages (009), in the modalities the goals and situation allow. A passage may carry an exercise: dictation when typing is possible, questions where they exist (008).
 
+A card in its learning steps comes once its step is due, ahead of other due cards, so a just-learned card returns with other cards between. One whose step falls later in the study day waits until everything else is done, then comes early rather than leaving the learner waiting (approved by the owner). Learning steps are never capped.
+
 ## Functions
 
 `derive(events, pack, goals, settings) → state` · `values(state, pack, settings, at) → values per modality` · `unknowns(values, pack) → per passage` · `candidates(state, pack, goals, settings) → ranked candidates` · `plan(state, unknowns, pack, goals, situation, settings, day) → today` · `card_passages(cards, state, values, unknowns, pack, eligible) → a passage or none per card` · `review(memory, passed, at, settings) → memory`
