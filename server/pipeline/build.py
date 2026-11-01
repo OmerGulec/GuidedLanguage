@@ -1,7 +1,7 @@
 import bz2
 import urllib.request
 from collections import Counter
-from collections.abc import Iterable, Iterator, Sequence
+from collections.abc import Iterable, Iterator, Mapping, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -12,6 +12,7 @@ from langs.ja.dictionary import read_jmdict
 from langs.ja.grammar import Found, Grammar, read_rules
 from pipeline import grammar as grammar_rules
 from pipeline.lessons import GRAMMAR, read_lessons
+from pipeline.splits import SPLITS, read_splits, split
 from store.pack import write_pack
 from store.paths import CONTENT, DATA, PACK
 
@@ -42,6 +43,7 @@ def build() -> None:
     lexicon = Lexicon(entries, read_readings(CONTENT / "readings.tsv"))
     analyser = Analyser()
     grammar = Grammar(read_rules(grammar_rules.RULES))
+    weights = read_splits(SPLITS)
     graph = [
         GrammarItem(i.id, i.header.kind, tuple(i.prerequisites), i.header.nuance)
         for i in read_lessons(GRAMMAR).values()
@@ -65,7 +67,7 @@ def build() -> None:
             occurrences.append(
                 Occurrence(pid, link.item, link.spelling, link.phonetic, token.start, token.end, 1)
             )
-        occurrences += grammar_occurrences(pid, text, forms)
+        occurrences += grammar_occurrences(pid, text, forms, weights)
     meta = {
         "built": datetime.now(UTC).isoformat(timespec="seconds"),
         "analyser": "fugashi + unidic-lite",
@@ -94,12 +96,14 @@ def words_outside(
             yield token, lexicon.link(token, entry)
 
 
-def grammar_occurrences(passage: str, text: str, forms: Iterable[Found]) -> Iterator[Occurrence]:
+def grammar_occurrences(
+    passage: str, text: str, forms: Iterable[Found], weights: Mapping[str, float]
+) -> Iterator[Occurrence]:
+    """Each use a form may have, with its probability. Until the model pass labels every
+    passage, a form splits by the shares measured on a sample (006)."""
     for form in forms:
-        # Until the model pass measures how often each use is meant, a form's uses share it.
-        share = 1 / len(form.uses)
         spelling = text[form.start : form.end]
-        for use in form.uses:
+        for use, share in split(form.uses, weights).items():
             yield Occurrence(passage, use, spelling, True, form.start, form.end, share)
 
 

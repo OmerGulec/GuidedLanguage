@@ -41,10 +41,18 @@ def test_words_a_form_is_made_of_are_left_to_it_and_words_it_frames_stay(
     assert words("お分かりになる。", analyser, lexicon, grammar) == ["分かり"]
 
 
-def test_a_form_with_several_uses_shares_itself_among_them(
+def test_a_form_splits_between_its_uses_by_measured_shares_or_evenly(
     analyser: Analyser, grammar: Grammar
 ) -> None:
     text = "猫が好き。"
     forms = [form for form in grammar.find(analyser.tokens(text)) if form.uses]
-    found = [(o.item, o.spelling, o.probability) for o in grammar_occurrences("p", text, forms)]
-    assert found == [("ga.subject", "が", 0.5), ("ga.object", "が", 0.5)]
+
+    def found(weights: dict[str, float]) -> list[tuple[str, str, float]]:
+        occurrences = grammar_occurrences("p", text, forms, weights)
+        return [(o.item, o.spelling, o.probability) for o in occurrences]
+
+    assert found({}) == [("ga.subject", "が", 0.5), ("ga.object", "が", 0.5)]
+    assert found({"ga.subject": 0.75, "ga.object": 0.25}) == [
+        ("ga.subject", "が", 0.75),
+        ("ga.object", "が", 0.25),
+    ]
