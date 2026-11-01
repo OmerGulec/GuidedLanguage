@@ -1,8 +1,14 @@
 from collections.abc import Iterable, Mapping, Set
 
 import numpy as np
+from numpy.typing import NDArray
 
 from core.pack import Column, GrammarItem, Pack
+
+
+def everywhere(pack: Pack) -> NDArray[np.bool_]:
+    """Every passage eligible to be shown."""
+    return np.ones(len(pack.passages), dtype=np.bool_)
 
 
 def pack_of(

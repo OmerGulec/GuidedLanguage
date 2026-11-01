@@ -3,9 +3,11 @@ from dataclasses import dataclass
 from functools import cache
 
 import numpy as np
+from numpy.typing import NDArray
 
 from core.cards import LADDERS, Card, Goal, LadderKind, Rung, ladder
 from core.pack import GrammarItem, Pack
+from core.passages import settled_uses
 from core.settings import Settings
 from core.state import CardState, State
 
@@ -22,9 +24,13 @@ class Ranking:
     # Each word's most common spelling in the library; None for a sound spelling.
     spellings: Mapping[str, str | None]
     grammar: Mapping[str, GrammarItem]
+    # Grammar uses that an eligible passage settles; the others have no sentence to show.
+    settled: frozenset[str]
 
 
-def ranking(pack: Pack, settings: Settings) -> Ranking:
+def ranking(pack: Pack, settings: Settings, eligible: NDArray[np.bool_]) -> Ranking:
+    """Eligible passages are those the shell may show: translated, and allowed by their
+    source's display policy."""
     items = sorted({column.item for column in pack.columns})
     index = {item: i for i, item in enumerate(items)}
     item_of_column = np.array([index[c.item] for c in pack.columns], dtype=np.int64)
@@ -50,7 +56,8 @@ def ranking(pack: Pack, settings: Settings) -> Ranking:
             best[column.item], spellings[column.item] = count, column.spelling
 
     frequency = {item: n for item, n in zip(items, totals.tolist(), strict=True) if n}
-    return Ranking(frequency, _ranks(frequency, pack.grammar, settings), spellings, pack.grammar)
+    ranks = _ranks(frequency, pack.grammar, settings)
+    return Ranking(frequency, ranks, spellings, pack.grammar, settled_uses(pack, eligible))
 
 
 def _ranks(
@@ -95,6 +102,8 @@ def candidates(state: State, ranking: Ranking, goal: Goal) -> list[str]:
             if mark is None and item not in state.introduced:
                 found.append((item, item))
             continue
+        if not showable(item, ranking):
+            continue
 
         rungs = ladder("word" if grammar is None else LADDER_OF[grammar.kind], goal)
         held_rungs = held.get(item, {})
@@ -108,6 +117,12 @@ def candidates(state: State, ranking: Ranking, goal: Goal) -> list[str]:
 
     found.sort(key=lambda pair: (-ranking.rank[pair[0]], pair[1]))
     return [card for _, card in found]
+
+
+def showable(item: str, ranking: Ranking) -> bool:
+    """A grammar use's cards need a passage that settles it (013)."""
+    grammar = ranking.grammar.get(item)
+    return grammar is None or grammar.kind != "use" or item in ranking.settled
 
 
 def offered_item(offer: str, ranking: Ranking) -> str:

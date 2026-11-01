@@ -9,7 +9,7 @@ from core.unknowns import unknowns
 from core.values import values
 from sim.learner import Learner, Simulation
 from sim.learners import HEAVY_NEW_BUDGET, START
-from store.pack import read_pack
+from store.pack import read_eligible, read_pack
 from store.paths import PACK
 
 MONTHS = 6
@@ -19,7 +19,7 @@ DAYS_PER_MONTH = 30
 def report() -> None:
     pack = read_pack(PACK)
     settings = Settings()
-    pack_ranking = ranking(pack, settings)
+    pack_ranking = ranking(pack, settings, read_eligible(PACK))
     learners = [
         (Learner("regular", seed=3), settings),
         (

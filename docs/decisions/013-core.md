@@ -6,12 +6,12 @@ Terms are defined in `docs/glossary.md`.
 
 ## Events
 
-Each event has an id made by the client (duplicates are ignored), a server sequence number (used only as a sync cursor), an instant stamped by the server (imports keep their original instant), an origin (ours, Anki, …) and a schema version; old shapes are upgraded in one function. History is replayed in (instant, id) order. Imported events get deterministic ids, so re-importing never duplicates history.
+Each event has an id made by the client (duplicates are ignored), a server sequence number (used only as a sync cursor), an instant made by the client when the event happened (imports keep their original instant; the server rejects instants more than a minute ahead of its clock and records when each event arrived, so a wrong clock can be found later), an origin (ours, Anki, …) and a schema version; old shapes are upgraded in one function. History is replayed in (instant, id) order. Imported events get deterministic ids, so re-importing never duplicates history.
 
 | Event | Meaning |
 |---|---|
-| Introduced(item, reason) | Met an item: new, re-taught, an explanation step, or imported. |
-| Reviewed(card, passed, method, answer) | A card answered. Typed answers are kept. |
+| Introduced(item, reason, passage) | Met an item: new, re-taught, an explanation step, or imported; in a passage, if one was shown. |
+| Reviewed(card, passed, method, answer, passage) | A card answered. Typed answers are kept, and the passage the card showed, if any. |
 | LookedUp(item, passage, surface, context) | Tapped in the reader. |
 | Read(passage, modality) | Finished a passage. |
 | Exercised(passage, kind, passed, answer) | Dictation or a passage question. |
@@ -59,6 +59,18 @@ A pattern is a chunk while it is known but its parts aren't; its explanation ste
 
 **Mastery** is a card's stability, shown per card on item pages and as a distribution on progress screens.
 
+## Passages
+
+A card shows a passage, chosen when the plan is made from its values and unknowns for reading. A passage qualifies when the shell marks it eligible (translated, and allowed by its source's display policy) and it holds the card's column: the card's spelling, or the word in kana; for a grammar use, the use settled there, at probability 0.9 or more. The first that wins, in this order:
+
+1. The rest known: the passage's unknowns less the card's own share are below 0.5.
+2. Not shown for this item before; failing that, shown longest ago.
+3. Fewest other unknowns.
+4. Fewest items.
+5. Library order.
+
+A word's first meeting is chosen the same way, so it is the only unknown where the library allows. When nothing qualifies, the card shows no passage. A grammar use that no eligible passage settles has no sentence card to show: it is not a candidate (009), and its cards wait, as cards the situation rules out do. Formations have no occurrences; how their cards find verbs in the library is still to be decided.
+
 ## Plan
 
 1. Due cards the situation allows, up to the review cap (overflow order in 009).
@@ -67,6 +79,6 @@ A pattern is a chunk while it is known but its parts aren't; its explanation ste
 
 ## Functions
 
-`derive(events, pack, goals, settings) → state` · `values(state, pack, settings, at) → values per modality` · `unknowns(values, pack) → per passage` · `candidates(state, pack, goals, settings) → ranked candidates` · `plan(state, unknowns, pack, goals, situation, settings, day) → today` · `review(memory, passed, at, settings) → memory`
+`derive(events, pack, goals, settings) → state` · `values(state, pack, settings, at) → values per modality` · `unknowns(values, pack) → per passage` · `candidates(state, pack, goals, settings) → ranked candidates` · `plan(state, unknowns, pack, goals, situation, settings, day) → today` · `card_passages(cards, state, values, unknowns, pack, eligible) → a passage or none per card` · `review(memory, passed, at, settings) → memory`
 
 The simulator (012) uses a memory model different from the scheduler's, so tests don't check the scheduler against itself.

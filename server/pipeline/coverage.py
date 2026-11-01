@@ -8,7 +8,7 @@ from core.settings import Settings
 from core.state import derive
 from core.unknowns import unknowns
 from core.values import values
-from store.pack import read_pack
+from store.pack import read_eligible, read_pack
 from store.paths import PACK
 
 KNOWN_WORDS = (100, 250, 500, 1000, 2000, 3000, 5000, 10000)
@@ -19,7 +19,7 @@ MEASURED_AT = datetime(2026, 1, 2, tzinfo=UTC)
 def report() -> None:
     pack = read_pack(PACK)
     settings = Settings()
-    order = ranked(ranking(pack, settings).frequency, excluded=frozenset())
+    order = ranked(ranking(pack, settings, read_eligible(PACK)).frequency, excluded=frozenset())
 
     print("words known  fully known  one unknown")
     for count in KNOWN_WORDS:

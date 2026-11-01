@@ -6,7 +6,7 @@ from datetime import date, datetime, timedelta
 import numpy as np
 from numpy.typing import NDArray
 
-from core.candidates import LADDER_OF, Ranking, candidates
+from core.candidates import LADDER_OF, Ranking, candidates, showable
 from core.cards import FIRST_RUNGS, LADDERS, RUNGS, Card, Goal
 from core.days import next_boundary, study_day
 from core.events import Modality
@@ -144,11 +144,13 @@ def _reviews(
     due: list[tuple[bool, float, str]] = []
     for card_id, held in state.cards.items():
         card = Card.parse(card_id)
-        # Cards outside the goal, such as imported ones, are kept but not reviewed (013).
+        # Cards outside the goal, such as imported ones, are kept but not reviewed (013). Cards
+        # the situation rules out, or with no passage to show, wait.
         if (
             held.suspended
             or goal not in RUNGS[card.rung].goals
             or not _possible(card_id, situation)
+            or not all(showable(item, ranking) for item in card.items)
         ):
             continue
         made_due = card.rung in FIRST_RUNGS and any(
@@ -171,7 +173,12 @@ def _reviews(
     }
     for item, mark in state.marks.items():
         card_id = _first_card(item, ranking)
-        if mark.status != "known" or card_id is None or item in first_held:
+        if (
+            mark.status != "known"
+            or card_id is None
+            or item in first_held
+            or not showable(item, ranking)
+        ):
             continue
         grammar = ranking.grammar.get(item)
         prerequisites = () if grammar is None else grammar.prerequisites

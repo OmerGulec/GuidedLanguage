@@ -10,7 +10,7 @@ All ranking lives here.
 
 **Kanji and kanji readings** rank by Σ (1 + lapses) over the learner's known words that contain them.
 
-**Hard edges.** An item is a candidate only once its prerequisites are known (systems: introduced). Prerequisites are the authored ones in lesson headers (010), plus: a form after what it is derived from (007), a pattern after its parts unless its lesson says it is met as a chunk, a system before its members, a formation before the uses built on it.
+**Hard edges.** An item is a candidate only once its prerequisites are known (systems: introduced). Prerequisites are the authored ones in lesson headers (010), plus: a form after what it is derived from (007), a pattern after its parts unless its lesson says it is met as a chunk, a system before its members, a formation before the uses built on it. A grammar use is a candidate only once an eligible passage settles it, since its card has nothing to show otherwise (013).
 
 **Building blocks** (formations, systems) take the rank of their highest-ranked dependent.
 

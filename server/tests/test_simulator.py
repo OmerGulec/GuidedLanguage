@@ -12,11 +12,12 @@ from core.unknowns import unknowns
 from core.values import values
 from sim.learner import Learner, Simulation
 from sim.learners import START, day_zero, heavy_user, importer, three_months
-from store.pack import read_pack
+from store.pack import read_eligible, read_pack
 
 SETTINGS = Settings()
-PACK = read_pack(Path(__file__).parent / "fixtures" / "pack.sqlite")
-RANKING = ranking(PACK, Settings())
+FIXTURE = Path(__file__).parent / "fixtures" / "pack.sqlite"
+PACK = read_pack(FIXTURE)
+RANKING = ranking(PACK, Settings(), read_eligible(FIXTURE))
 
 
 @pytest.fixture(scope="module")

@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Literal
 
 import numpy as np
+from numpy.typing import NDArray
 
 from core.pack import Column, GrammarItem, Occurrence, Pack, Passage, Source, Word
 
@@ -181,6 +182,18 @@ def read_passages(path: Path) -> list[Passage]:
     with closing(sqlite3.connect(path)) as db:
         rows = db.execute("SELECT id, source, position, text FROM passages ORDER BY rowid")
         return [Passage(id, source, position, text) for id, source, position, text in rows]
+
+
+def read_eligible(path: Path) -> NDArray[np.bool_]:
+    """Per passage, in the pack's order: whether the app may show it, being translated and
+    allowed by its source's display policy (011)."""
+    with closing(sqlite3.connect(path)) as db:
+        rows = db.execute(
+            "SELECT t.passage IS NOT NULL AND s.display != 'analysis' FROM passages p"
+            " JOIN sources s ON s.id = p.source LEFT JOIN translations t ON t.passage = p.id"
+            " ORDER BY p.rowid"
+        ).fetchall()
+    return np.array([bool(shown) for (shown,) in rows], dtype=np.bool_)
 
 
 def read_pack(path: Path) -> Pack:

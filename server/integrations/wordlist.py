@@ -17,7 +17,7 @@ from core.unknowns import unknowns
 from core.values import values
 from langs.ja.analyser import hiragana, is_kana
 from langs.ja.content import rows
-from store.pack import read_pack, read_words
+from store.pack import read_eligible, read_pack, read_words
 from store.paths import PACK
 
 SHOWN = 15
@@ -100,7 +100,7 @@ def match(
 def report(path: Path) -> None:
     pack, words = read_pack(PACK), read_words(PACK)
     settings = Settings()
-    pack_ranking = ranking(pack, settings)
+    pack_ranking = ranking(pack, settings, read_eligible(PACK))
     matches = match(read_word_list(path), words, pack_ranking.frequency)
     labels = {w.id: w.spellings[0] if w.spellings else w.readings[0] for w in words}
 

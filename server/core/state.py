@@ -54,9 +54,11 @@ class State:
     read: Mapping[Modality, frozenset[str]]
     # Items whose mark a failed first review withdrew, by study day (014).
     withdrawn: Mapping[str, date]
+    # The passages each item has shown, oldest first, each once (013).
+    shown: Mapping[str, tuple[str, ...]]
 
 
-EMPTY = State({}, {}, {}, {}, {"reading": frozenset(), "listening": frozenset()}, {})
+EMPTY = State({}, {}, {}, {}, {"reading": frozenset(), "listening": frozenset()}, {}, {})
 
 
 def derive(events: Iterable[Event], settings: Settings) -> State:
@@ -79,18 +81,23 @@ def advance(state: State, events: Iterable[Event], settings: Settings) -> State:
     made_due = dict(state.made_due)
     read: dict[Modality, set[str]] = {m: set(p) for m, p in state.read.items()}
     withdrawn = dict(state.withdrawn)
+    shown = dict(state.shown)
 
     for event in sorted(events, key=lambda e: (e.at, e.id)):
         day = study_day(event.at, settings)
         match event.payload:
-            case Introduced(item=item, reason=reason):
+            case Introduced(item=item, reason=reason, passage=passage):
                 introduced.setdefault(item, event.at)
+                _record_shown(shown, (item,), passage)
                 if reason == "reteach":
                     for card, held in cards.items():
                         if item in Card.parse(card).items:
                             cards[card] = replace(held, lapses=0, suspended=False)
                     made_due[item] = day
-            case Reviewed(card=card, passed=passed, method=method) if method != "choice":
+            case Reviewed(card=card, passed=passed, method=method, passage=passage) if (
+                method != "choice"
+            ):
+                _record_shown(shown, Card.parse(card).items, passage)
                 marked = None if card in cards else _marked_item(card, marks)
                 if marked is not None and not passed:
                     # A failed first review refutes the mark: memory restarts from real reviews
@@ -116,13 +123,26 @@ def advance(state: State, events: Iterable[Event], settings: Settings) -> State:
                     marks[item] = Mark(status, event.at, reason)
             case Read(passage=passage, modality=modality):
                 read[modality].add(passage)
-            case Reviewed() | Exercised() | Retracted():
+            case Reviewed(card=card, passage=passage):
+                _record_shown(shown, Card.parse(card).items, passage)
+            case Exercised() | Retracted():
                 pass
             case _:
                 assert_never(event.payload)
 
     passages_read: dict[Modality, frozenset[str]] = {m: frozenset(p) for m, p in read.items()}
-    return State(introduced, marks, cards, made_due, passages_read, withdrawn)
+    return State(introduced, marks, cards, made_due, passages_read, withdrawn, shown)
+
+
+def _record_shown(
+    shown: dict[str, tuple[str, ...]], items: Iterable[str], passage: str | None
+) -> None:
+    """Move the passage to the end of each item's list, so the front is what was seen longest
+    ago."""
+    if passage is None:
+        return
+    for item in items:
+        shown[item] = (*(p for p in shown.get(item, ()) if p != passage), passage)
 
 
 def starting(item: str, mark: Mark, settings: Settings) -> CardState:

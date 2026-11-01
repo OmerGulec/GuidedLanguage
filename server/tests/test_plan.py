@@ -12,7 +12,7 @@ from core.plan import Plan, Situation, plan
 from core.settings import Settings
 from core.state import derive
 from tests.history import TOKYO, at, event
-from tests.packs import pack_of
+from tests.packs import everywhere, pack_of
 
 WAKARU, KOTO = "w:1606560", "w:1313580"
 IN_KANA, IN_KANJI, KOTO_IN_KANA = Column(WAKARU, None), Column(WAKARU, "分かる"), Column(KOTO, None)
@@ -25,7 +25,7 @@ PACK = pack_of(
     (KOTO_IN_KANA,),
     (KOTO_IN_KANA,),
 )
-RANKING = ranking(PACK, TOKYO)
+RANKING = ranking(PACK, TOKYO, everywhere(PACK))
 RECOGNIZE = Card((WAKARU,), "分かる", "recognize").id
 LISTEN = Card((WAKARU,), None, "listen").id
 KOTO_RECOGNIZE = Card((KOTO,), None, "recognize").id
@@ -164,7 +164,14 @@ def test_reading_takes_the_fewest_unknowns_then_the_easiest_and_skips_read_passa
         today = replace(state, read={"reading": read, "listening": frozenset()})
         both: dict[Modality, NDArray[np.float64]] = {"reading": unknowns, "listening": unknowns}
         return plan(
-            today, both, pack, ranking(pack, settings), "reader", Situation(), settings, at(1, 9)
+            today,
+            both,
+            pack,
+            ranking(pack, settings, everywhere(pack)),
+            "reader",
+            Situation(),
+            settings,
+            at(1, 9),
         ).passages["reading"]
 
     assert picks(frozenset()) == ("p2", "p1", "p0")
@@ -182,7 +189,7 @@ GRAMMAR_PACK = pack_of(
     (KOTO_IN_KANA,),
     graph=[SHAPE, TE, TEIRU, TOPIC],
 )
-GRAMMAR_RANKING = ranking(GRAMMAR_PACK, TOKYO)
+GRAMMAR_RANKING = ranking(GRAMMAR_PACK, TOKYO, everywhere(GRAMMAR_PACK))
 TEIRU_SENTENCE = Card((TEIRU.id,), None, "sentence").id
 TOPIC_SENTENCE = Card((TOPIC.id,), None, "sentence").id
 TE_UNDO = Card((TE.id,), None, "undo").id
@@ -206,7 +213,7 @@ def test_rank_is_frequency_over_effort_and_building_blocks_take_their_best_depen
         probabilities={Column(TOPIC.id, None): 0.5},
         grammar={TOPIC.id},
     )
-    assert ranking(halved, TOKYO).frequency == {TOPIC.id: 0.5}
+    assert ranking(halved, TOKYO, everywhere(halved)).frequency == {TOPIC.id: 0.5}
 
 
 def test_grammar_waits_for_what_it_builds_on_and_a_system_is_offered_by_its_id() -> None:

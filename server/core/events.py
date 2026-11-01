@@ -9,6 +9,8 @@ type Modality = Literal["reading", "listening"]
 class Introduced:
     item: str
     reason: Literal["new", "reteach", "explanation", "import"]
+    # The passage the item was met in, if any.
+    passage: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -18,6 +20,8 @@ class Reviewed:
     # "import": answered in another app, which did not record how.
     method: Literal["self", "typed", "choice", "import"]
     answer: str | None = None
+    # The passage the card showed, if any (013).
+    passage: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
