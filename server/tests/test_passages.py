@@ -33,7 +33,10 @@ def chosen(
     values = np.array([(known or {}).get(c, 0.0) for c in pack.columns], dtype=np.float64)
     state = derive(history or [], TOKYO)
     shown_from = everywhere(pack) if eligible is None else eligible
-    return card_passages([card], state, values, unknowns(values, pack), pack, shown_from)[card]
+    index = {column: i for i, column in enumerate(pack.columns)}
+    return card_passages([card], state, values, unknowns(values, pack), pack, index, shown_from)[
+        card
+    ]
 
 
 def shown(card: str, passage: str, day: int) -> Event:

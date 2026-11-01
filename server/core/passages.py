@@ -1,6 +1,6 @@
 """The passage a card shows (013)."""
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 
 import numpy as np
 from numpy.typing import NDArray
@@ -22,13 +22,14 @@ def card_passages(
     values: NDArray[np.float64],
     unknowns: NDArray[np.float64],
     pack: Pack,
+    index: Mapping[Column, int],
     eligible: NDArray[np.bool_],
 ) -> dict[str, str | None]:
     """The passage each card shows, from the eligible passages holding the card's column: the
     rest known if possible; then one the item has not shown, or else showed longest ago; then
     the fewest other unknowns; then the fewest items. None when no passage qualifies or the
-    card holds no column. Values and unknowns are the plan's, for reading."""
-    index = {column: i for i, column in enumerate(pack.columns)}
+    card holds no column. Values and unknowns are the plan's, for reading; the index gives each
+    of the pack's columns its position."""
     columns = {card: _column(Card.parse(card), index) for card in cards}
     wanted = np.array(sorted({c for c in columns.values() if c is not None}), dtype=np.int32)
 
@@ -44,7 +45,6 @@ def card_passages(
     )
 
     sizes = np.bincount(pack.appearance_passages, minlength=len(pack.passages))
-    position = {passage: i for i, passage in enumerate(pack.passages)}
     chosen: dict[str, str | None] = {}
     for card, column in columns.items():
         if column is None:
@@ -61,10 +61,14 @@ def card_passages(
             continue
 
         rest = unknowns[passages] - probabilities * (1.0 - values[column])
-        shown = [position[p] for p in state.shown.get(pack.columns[column].item, ())]
-        age = np.full(len(pack.passages), -1, dtype=np.int64)
-        age[np.array(shown, dtype=np.int64)] = np.arange(len(shown))
-        order = np.lexsort((passages, sizes[passages], rest, age[passages], rest >= KNOWN_REST))
+        # How long ago the item showed each passage: -1 for never, so those come first.
+        indices: list[int] = passages.tolist()
+        found = {pack.passages[i]: n for n, i in enumerate(indices)}
+        age = np.full(len(passages), -1, dtype=np.int64)
+        for n, shown in enumerate(state.shown.get(pack.columns[column].item, ())):
+            if shown in found:
+                age[found[shown]] = n
+        order = np.lexsort((passages, sizes[passages], rest, age, rest >= KNOWN_REST))
         chosen[card] = pack.passages[passages[order[0]]]
     return chosen
 
@@ -76,7 +80,7 @@ def settled_uses(pack: Pack, eligible: NDArray[np.bool_]) -> frozenset[str]:
     return frozenset(pack.columns[c].item for c in columns if pack.columns[c].item in pack.grammar)
 
 
-def _column(card: Card, index: dict[Column, int]) -> int | None:
+def _column(card: Card, index: Mapping[Column, int]) -> int | None:
     """The column a card's passage must hold. Pair cards hold none yet, and formations none at
     all, since they have no occurrences."""
     if len(card.items) != 1:

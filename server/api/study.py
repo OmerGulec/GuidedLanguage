@@ -116,7 +116,9 @@ def _next(
     unknown: NDArray[np.float64],
 ) -> CardStep | PageStep | MeetingStep | DoneStep:
     def passage_of(card: str) -> PassageView | None:
-        chosen = card_passages([card], state, reading, unknown, library.pack, library.eligible)
+        chosen = card_passages(
+            [card], state, reading, unknown, library.pack, library.columns, library.eligible
+        )
         passage = chosen[card]
         return None if passage is None else passage_view(library, passage, state, reading)
 

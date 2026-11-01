@@ -6,8 +6,8 @@ from datetime import date, datetime, timedelta
 import numpy as np
 from numpy.typing import NDArray
 
-from core.candidates import LADDER_OF, Ranking, candidates, showable
-from core.cards import FIRST_RUNGS, LADDERS, RUNGS, Card, Goal
+from core.candidates import LADDER_OF, Ranking, offers, showable
+from core.cards import FIRST_RUNGS, LADDERS, RUNGS, Card, Goal, ladder
 from core.days import next_boundary, study_day
 from core.events import Modality
 from core.pack import Pack
@@ -59,16 +59,19 @@ def plan(
         if _system(item, ranking) and study_day(at, settings) == today
     ]
     started = Counter(card.rung in FIRST_RUNGS for card in learned_today)
+    later_rungs = any(len(ladder(kind, goal)) > 1 for kind in LADDERS)
     allowance = {
         True: max(0, settings.new_budget - started[True] - len(shown_today) - len(reteach)),
-        False: max(0, settings.new_budget - started[False]),
+        False: max(0, settings.new_budget - started[False]) if later_rungs else 0,
     }
     grammar_started = sum(
         card.rung in FIRST_RUNGS and card.items[0] in ranking.grammar for card in learned_today
     )
     grammar_left = max(0, settings.grammar_cap - grammar_started - len(shown_today))
     new: list[str] = []
-    for offer in candidates(state, ranking, goal):
+    for offer in offers(state, ranking, goal):
+        if allowance[True] == 0 and allowance[False] == 0:
+            break
         system = _system(offer, ranking)
         card = None if system else Card.parse(offer)
         first = card is None or card.rung in FIRST_RUNGS

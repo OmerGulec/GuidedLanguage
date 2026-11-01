@@ -1,4 +1,4 @@
-from collections.abc import Mapping, Set
+from collections.abc import Iterator, Mapping, Set
 from dataclasses import dataclass
 from functools import cache
 
@@ -26,6 +26,8 @@ class Ranking:
     grammar: Mapping[str, GrammarItem]
     # Grammar uses that an eligible passage settles; the others have no sentence to show.
     settled: frozenset[str]
+    # Every ranked item, highest rank first, ties by id (009).
+    order: tuple[str, ...]
 
 
 def ranking(pack: Pack, settings: Settings, eligible: NDArray[np.bool_]) -> Ranking:
@@ -57,7 +59,8 @@ def ranking(pack: Pack, settings: Settings, eligible: NDArray[np.bool_]) -> Rank
 
     frequency = {item: n for item, n in zip(items, totals.tolist(), strict=True) if n}
     ranks = _ranks(frequency, pack.grammar, settings)
-    return Ranking(frequency, ranks, spellings, pack.grammar, settled_uses(pack, eligible))
+    order = tuple(sorted(ranks, key=lambda item: (-ranks[item], item)))
+    return Ranking(frequency, ranks, spellings, pack.grammar, settled_uses(pack, eligible), order)
 
 
 def _ranks(
@@ -84,12 +87,16 @@ def ranked(frequency: Mapping[str, float], excluded: Set[str]) -> list[str]:
 
 
 def candidates(state: State, ranking: Ranking, goal: Goal) -> list[str]:
-    """New cards in rank order: first rungs of new items whose prerequisites are known, then
-    rungs that just unlocked (009). A system has no cards; it is offered by its item id."""
-    held = _held(state)
-    found: list[tuple[str, str]] = []
+    return list(offers(state, ranking, goal))
 
-    for item in ranking.rank:
+
+def offers(state: State, ranking: Ranking, goal: Goal) -> Iterator[str]:
+    """New cards in rank order, as many as are taken: first rungs of new items whose
+    prerequisites are known, and rungs that just unlocked (009). A system has no cards; it is
+    offered by its item id."""
+    held = _held(state)
+
+    for item in ranking.order:
         mark = state.marks.get(item)
         if mark is not None and mark.status == "ignored":
             continue
@@ -100,7 +107,7 @@ def candidates(state: State, ranking: Ranking, goal: Goal) -> list[str]:
             continue
         if grammar is not None and grammar.kind == "system":
             if mark is None and item not in state.introduced:
-                found.append((item, item))
+                yield item
             continue
         if not showable(item, ranking):
             continue
@@ -109,14 +116,11 @@ def candidates(state: State, ranking: Ranking, goal: Goal) -> list[str]:
         held_rungs = held.get(item, {})
         if mark is None and rungs[0].name not in held_rungs:
             spelling = ranking.spellings.get(item) if grammar is None else None
-            found.append((item, Card((item,), spelling, rungs[0].name).id))
+            yield Card((item,), spelling, rungs[0].name).id
             continue
         card = _next_rung(item, rungs, held_rungs, marked_known=mark is not None)
         if card is not None:
-            found.append((item, card))
-
-    found.sort(key=lambda pair: (-ranking.rank[pair[0]], pair[1]))
-    return [card for _, card in found]
+            yield card
 
 
 def showable(item: str, ranking: Ranking) -> bool:

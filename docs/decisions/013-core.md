@@ -81,6 +81,6 @@ A card in its learning steps comes once its step is due, ahead of other due card
 
 ## Functions
 
-`derive(events, pack, goals, settings) → state` · `values(state, pack, settings, at) → values per modality` · `unknowns(values, pack) → per passage` · `candidates(state, pack, goals, settings) → ranked candidates` · `plan(state, unknowns, pack, goals, situation, settings, day) → today` · `card_passages(cards, state, values, unknowns, pack, eligible) → a passage or none per card` · `review(memory, passed, at, settings) → memory`
+`derive(events, pack, goals, settings) → state` · `values(state, pack, settings, at) → values per modality` · `unknowns(values, pack) → per passage` · `candidates(state, pack, goals, settings) → ranked candidates` · `plan(state, unknowns, pack, goals, situation, settings, day) → today` · `card_passages(cards, state, values, unknowns, pack, index, eligible) → a passage or none per card` · `review(memory, passed, at, settings) → memory`
 
 The simulator (012) uses a memory model different from the scheduler's, so tests don't check the scheduler against itself.
