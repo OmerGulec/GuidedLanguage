@@ -3,15 +3,19 @@ name = "guidedlanguage"
 version = "0.0.0"
 requires-python = ">=3.13"
 dependencies = [
+    "argon2-cffi>=25.1.0",
+    "fastapi>=0.162.0",
     "fsrs>=6.3.2",
     "fugashi>=1.5.2",
     "numpy>=2.5.4",
     "pydantic>=2.14.2",
     "unidic-lite>=1.0.8",
+    "uvicorn>=0.54.0",
 ]
 
 [dependency-groups]
 dev = [
+    "httpx>=0.28.1",
     "import-linter>=2.15",
     "pyright>=1.1.414",
     "pytest>=9.2.0",
