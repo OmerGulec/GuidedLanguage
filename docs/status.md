@@ -9,7 +9,7 @@ Where things stand, for whoever picks up the work next. Decisions are in `docs/d
 - **Simulator** (`server/sim/`): seeded learners against the real plan; named learners day zero, importer, three months, heavy user.
 - **Word-list importer** (`server/integrations/wordlist.py`).
 - **Renshuu importer** (`server/integrations/renshuu.py`): fetches the learner's full answer history through Renshuu's API and replays it as Introduced and Reviewed events (013). Per card and day one review, failed if any answer that day was wrong. Kanji > Kana and Kanji > Meaning feed recognize in the kanji spelling; Kana > Meaning recognize in kana; Listening listen; Accent pitch; Meaning > Kana and Meaning > Kanji cloze; Kana > Kanji and Writing nothing. Reviews of rungs outside the goal are kept and not scheduled.
-- **Grammar graph** (`content/ja/grammar/`, checked by `server/pipeline/lessons.py`): one Markdown file per item named by its id, with a TOML header (010): 190 items for about JLPT N5 to N4 plus what 009 adds (171 uses, 11 formations, 8 systems) and 35 form pages. `seed-order.txt` is the hand order (009). Headers only, except the sample lesson for ている (form page and both uses).
+- **Grammar graph** (`content/ja/grammar/`, checked by `server/pipeline/lessons.py`): one Markdown file per item named by its id, with a TOML header (010): 199 items for about JLPT N5 to N4 plus what 009 adds (179 uses, 11 formations, 9 systems) and 37 form pages, revised after a second opinion. `seed-order.txt` is the hand order (009). Headers only, except the sample lesson for ている (form page and both uses).
 - Not yet: grammar detection, grammar in the pack and core, API, user database, web app.
 
 ## Running
@@ -50,6 +50,10 @@ From `server/`:
 - Display policy is not enforced yet; Tatoeba allows full display.
 - A word marked known counts in every kanji spelling until reviewed. Likewise a recognize card in one spelling (say an imported 子供達) keeps the item's other spellings (子供たち) from ever being offered.
 - A compound JMdict lists counts as one unknown word even when its parts are known (経済活動). Rare compounds are where this bites; reading them through their parts needs a way to tell transparent compounds from opaque ones (自転車).
+
+- Lesson sources: imabi.org, guidetojapanese.org and tofugu.com are blocked in this environment. The ている sample was written from expertise and checked by a second model, but steps 1, 2 and 4 of 010 (gather three sources, comparison note, check against them) wait until those hosts are allowed.
+- Grammar or word: a pattern that attaches to any verb, adjective, noun or clause is grammar; an expression built on one content word is a word (似ている, 何も, 一番). Stem compounds with 始める, 終わる, 続ける and 出す stay words because they mean what the verb means; すぎる, やすい and にくい are grammar because they don't.
+- Members of a system that are words (こそあど words, counters) have no link to their system yet, so "a system before its members" (009) covers only grammar members.
 
 ## Working agreements
 
