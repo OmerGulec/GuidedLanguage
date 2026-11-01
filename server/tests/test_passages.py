@@ -86,12 +86,12 @@ def test_only_eligible_passages_are_shown() -> None:
     assert chosen(pack, RECOGNIZE, eligible=np.array([False, False])) is None
 
 
-def test_a_grammar_card_shows_only_passages_that_settle_its_use() -> None:
+def test_a_grammar_card_shows_only_passages_that_settle_its_use_never_a_mere_share() -> None:
     settled = pack_of((TOPIC_IN, KOTO_IN_KANA), graph=[TOPIC])
-    unsettled = pack_of((TOPIC_IN,), probabilities={TOPIC_IN: 0.5}, graph=[TOPIC])
+    high_share = pack_of((TOPIC_IN,), probabilities={TOPIC_IN: 0.97}, graph=[TOPIC])
 
     assert chosen(settled, TOPIC_SENTENCE) == "p0"
-    assert chosen(unsettled, TOPIC_SENTENCE) is None
+    assert chosen(high_share, TOPIC_SENTENCE) is None
 
 
 def test_a_use_no_passage_settles_is_neither_offered_nor_brought_due() -> None:
@@ -119,5 +119,5 @@ def test_a_use_no_passage_settles_is_neither_offered_nor_brought_due() -> None:
         return offered, due(marked), due(learned)
 
     assert offered_and_due(1.0) == (True, True, True)
-    assert offered_and_due(0.5) == (False, False, False)
+    assert offered_and_due(0.97) == (False, False, False)
     assert offered_and_due(1.0, eligible=False) == (False, False, False)

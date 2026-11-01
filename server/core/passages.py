@@ -9,9 +9,9 @@ from core.cards import Card
 from core.pack import Column, Pack
 from core.state import State
 
-# A grammar use is settled in a passage at this probability: by a rule, a label, or later a
-# confident model.
-SETTLED = 0.9
+# A grammar use is settled in a passage only when certain there: a rule that leaves one use, or
+# a label two models agree on. A share, however high, is true of the form, not of the passage.
+SETTLED = 1.0
 # Fewer unknowns than this besides the card's own, and the rest of the passage counts as known.
 KNOWN_REST = 0.5
 

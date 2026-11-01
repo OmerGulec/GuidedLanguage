@@ -61,7 +61,7 @@ A pattern is a chunk while it is known but its parts aren't; its explanation ste
 
 ## Passages
 
-A card shows a passage, chosen when the plan is made from its values and unknowns for reading. A passage qualifies when the shell marks it eligible (translated, and allowed by its source's display policy) and it holds the card's column: the card's spelling, or the word in kana; for a grammar use, the use settled there, at probability 0.9 or more. The first that wins, in this order:
+A card shows a passage, chosen when the plan is made from its values and unknowns for reading. A passage qualifies when the shell marks it eligible (translated, and allowed by its source's display policy) and it holds the card's column: the card's spelling, or the word in kana; for a grammar use, the use settled there: certain, from a rule that leaves the form one use or a label two models agree on, never from a share, which is true of the form and not of the passage. The model pass will settle uses the same way, through its confident labels. The first that wins, in this order:
 
 1. The rest known: the passage's unknowns less the card's own share are below 0.5.
 2. Not shown for this item before; failing that, shown longest ago.

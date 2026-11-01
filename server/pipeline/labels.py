@@ -11,12 +11,13 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict
 
-from core.passages import SETTLED
 from pipeline.lessons import GRAMMAR
 from pipeline.splits import Labels, read_labels
 
 SAMPLES = GRAMMAR / "samples"
 LABELLINGS_PER_SET = 2
+# A labelling is sure of a use at this probability; a label stands when both are sure of one.
+SURE = 0.9
 
 # A form's position in its passage: the passage id and the form's first character.
 type Place = tuple[str, int]
@@ -49,7 +50,7 @@ def read_agreed(folder: Path) -> dict[Place, str]:
 
 
 def settled(places: Mapping[str, list[int]], first: Labels, second: Labels) -> dict[Place, str]:
-    """Forms whose use both labellings name with at least the settled probability."""
+    """Forms whose use both labellings are sure of."""
     agreed: dict[Place, str] = {}
     for passage, starts in places.items():
         pairs = zip(first.get(passage, []), second.get(passage, []), strict=False)
@@ -57,7 +58,7 @@ def settled(places: Mapping[str, list[int]], first: Labels, second: Labels) -> d
             if mine is None or theirs is None:
                 continue
             use, chance = max(mine.items(), key=lambda pair: pair[1])
-            if chance >= SETTLED and theirs.get(use, 0.0) >= SETTLED:
+            if chance >= SURE and theirs.get(use, 0.0) >= SURE:
                 agreed[passage, at] = use
     return agreed
 
