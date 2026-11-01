@@ -1,7 +1,7 @@
 import bz2
 import urllib.request
 from collections import Counter
-from collections.abc import Iterable, Iterator, Mapping, Sequence
+from collections.abc import Iterable, Iterator, Mapping, Sequence, Set
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -11,13 +11,15 @@ from langs.ja.checks import check_links
 from langs.ja.dictionary import read_jmdict
 from langs.ja.grammar import Found, Grammar, read_rules
 from pipeline import grammar as grammar_rules
-from pipeline.lessons import GRAMMAR, read_lessons
+from pipeline.lessons import GRAMMAR, Lesson, read_lessons
 from pipeline.splits import SPLITS, read_splits, split
-from store.pack import write_pack
+from store.pack import Page, write_pack, write_texts
 from store.paths import CONTENT, DATA, PACK
 
 JMDICT_URL = "https://www.edrdg.org/pub/Nihongo/JMdict_e.gz"
 TATOEBA_URL = "https://downloads.tatoeba.org/exports/per_language/jpn/jpn_sentences.tsv.bz2"
+ENGLISH_URL = "https://downloads.tatoeba.org/exports/per_language/eng/eng_sentences.tsv.bz2"
+LINKS_URL = "https://downloads.tatoeba.org/exports/per_language/jpn/jpn-eng_links.tsv.bz2"
 TATOEBA = Source("tatoeba", "Tatoeba", "CC BY 2.0 FR", "full")
 UNRESOLVED_SHOWN = 15
 WORDS_SHOWN = 20
@@ -38,15 +40,41 @@ def tatoeba_sentences(path: Path) -> Iterator[tuple[int, str]]:
             yield int(number), text
 
 
+def tatoeba_links(path: Path) -> Iterator[tuple[int, int]]:
+    with bz2.open(path, "rt", encoding="utf-8") as lines:
+        for line in lines:
+            source, target = line.split("\t")
+            yield int(source), int(target)
+
+
+def translations(
+    links: Iterable[tuple[int, int]], sentences: Iterable[tuple[int, str]], wanted: Set[int]
+) -> dict[int, str]:
+    """One translation per wanted sentence: the oldest, which has had the most readers."""
+    chosen: dict[int, int] = {}
+    for sentence, translation in links:
+        if sentence in wanted and (sentence not in chosen or translation < chosen[sentence]):
+            chosen[sentence] = translation
+    needed = set(chosen.values())
+    texts = {number: text for number, text in sentences if number in needed}
+    return {sentence: texts[t] for sentence, t in chosen.items() if t in texts}
+
+
+def page(lesson: Lesson) -> Page:
+    h = lesson.header
+    return Page(lesson.id, h.kind, h.name, h.written, h.label, h.form, h.key, lesson.body)
+
+
 def build() -> None:
     entries = list(read_jmdict(fetch(JMDICT_URL)))
     lexicon = Lexicon(entries, read_readings(CONTENT / "readings.tsv"))
     analyser = Analyser()
     grammar = Grammar(read_rules(grammar_rules.RULES))
     weights = read_splits(SPLITS)
+    lessons = read_lessons(GRAMMAR).values()
     graph = [
         GrammarItem(i.id, i.header.kind, tuple(i.prerequisites), i.header.nuance)
-        for i in read_lessons(GRAMMAR).values()
+        for i in lessons
         if i.header.kind != "form"
     ]
     words = {w.id: w for w in map(word, entries)}
@@ -74,6 +102,17 @@ def build() -> None:
         "dictionary": "JMdict_e",
     }
     write_pack(PACK, meta, [TATOEBA], words.values(), graph, passages.values(), occurrences)
+    english = translations(
+        tatoeba_links(fetch(LINKS_URL)),
+        tatoeba_sentences(fetch(ENGLISH_URL)),
+        {p.position for p in passages.values()},
+    )
+    write_texts(
+        PACK,
+        {p.id: english[p.position] for p in passages.values() if p.position in english},
+        {word(entry).id: entry.senses for entry in entries},
+        map(page, lessons),
+    )
     report(words, unresolved, len(passages), occurrences)
     print(f"written {PACK}")
 

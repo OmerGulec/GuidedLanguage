@@ -5,7 +5,7 @@ import pytest
 from langs.ja.analyser import Analyser, Lexicon, read_readings
 from langs.ja.dictionary import read_jmdict
 from langs.ja.grammar import Grammar, read_rules
-from pipeline.build import grammar_occurrences, words_outside
+from pipeline.build import grammar_occurrences, translations, words_outside
 from pipeline.grammar import RULES
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -56,3 +56,10 @@ def test_a_form_splits_between_its_uses_by_measured_shares_or_evenly(
         ("ga.subject", "が", 0.75),
         ("ga.object", "が", 0.25),
     ]
+
+
+def test_each_sentence_takes_its_oldest_translation() -> None:
+    links = [(1, 30), (1, 20), (2, 40), (3, 50), (4, 60)]
+    english = [(20, "older"), (30, "newer"), (40, "only"), (60, "not wanted")]
+
+    assert translations(links, english, wanted={1, 2, 3}) == {1: "older", 2: "only"}

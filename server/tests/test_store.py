@@ -1,7 +1,15 @@
 from pathlib import Path
 
 from core.pack import Column, GrammarItem, Occurrence, Passage, Source, Word
-from store.pack import read_pack, write_pack
+from store.pack import (
+    Page,
+    read_pack,
+    read_page,
+    read_senses,
+    read_translation,
+    write_pack,
+    write_texts,
+)
 
 
 def test_read_pack_merges_sound_spellings_and_keeps_kanji_spellings(tmp_path: Path) -> None:
@@ -45,3 +53,20 @@ def test_the_grammar_graph_survives_and_each_passage_keeps_its_highest_probabili
     pack = read_pack(path)
     assert pack.grammar == {item.id: item for item in uses}
     assert pack.appearance_probabilities.tolist() == [1.0]
+
+
+def test_texts_for_the_learner_come_back_as_written(tmp_path: Path) -> None:
+    path = tmp_path / "pack.sqlite"
+    source = Source("tatoeba", "Tatoeba", "CC BY 2.0 FR", "full")
+    word = Word("w:1", ("飲む",), ("のむ",), ("to drink",), common=True)
+    page = Page("teiru", "form", "ている", "ている", "V-ている", "te", "key", "body")
+    write_pack(path, {}, [source], [word], [], [Passage("a", "tatoeba", 1, "飲む。")], [])
+    write_texts(
+        path, {"a": "I drink."}, {"w:1": [["to drink", "to swallow"], ["to smoke"]]}, [page]
+    )
+
+    assert read_translation(path, "a") == "I drink."
+    assert read_translation(path, "b") is None
+    assert read_senses(path, "w:1") == (("to drink", "to swallow"), ("to smoke",))
+    assert read_page(path, "teiru") == page
+    assert read_page(path, "teiru.ongoing") is None

@@ -1,8 +1,10 @@
 import json
 import sqlite3
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Mapping, Sequence
 from contextlib import closing
+from dataclasses import dataclass
 from pathlib import Path
+from typing import Literal
 
 import numpy as np
 
@@ -30,7 +32,27 @@ CREATE TABLE occurrences (
     probability REAL NOT NULL
 );
 CREATE INDEX occurrences_by_item ON occurrences (item);
+CREATE TABLE translations (passage TEXT PRIMARY KEY REFERENCES passages, text TEXT NOT NULL);
+CREATE TABLE senses (word TEXT PRIMARY KEY REFERENCES words, glosses TEXT NOT NULL);
+CREATE TABLE pages (
+    id TEXT PRIMARY KEY, kind TEXT NOT NULL, name TEXT NOT NULL, written TEXT, label TEXT,
+    form TEXT, key TEXT, body TEXT NOT NULL
+);
 """
+
+
+@dataclass(frozen=True, slots=True)
+class Page:
+    """A grammar item's page, or a form page (010)."""
+
+    id: str
+    kind: Literal["form", "use", "formation", "system"]
+    name: str
+    written: str | None
+    label: str | None
+    form: str | None
+    key: str | None
+    body: str
 
 
 def write_pack(
@@ -76,6 +98,45 @@ def write_pack(
     db.close()
 
 
+def write_texts(
+    path: Path,
+    translations: Mapping[str, str],
+    senses: Mapping[str, Sequence[Sequence[str]]],
+    pages: Iterable[Page],
+) -> None:
+    """Add what only the learner reads, never core: translations by passage, every sense of
+    a word, and grammar pages."""
+    with closing(sqlite3.connect(path)) as db:
+        db.executemany("INSERT INTO translations VALUES (?, ?)", translations.items())
+        db.executemany(
+            "INSERT INTO senses VALUES (?, ?)",
+            ((word, json.dumps(glosses, ensure_ascii=False)) for word, glosses in senses.items()),
+        )
+        db.executemany(
+            "INSERT INTO pages VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            ((p.id, p.kind, p.name, p.written, p.label, p.form, p.key, p.body) for p in pages),
+        )
+        db.commit()
+
+
+def read_translation(path: Path, passage: str) -> str | None:
+    with closing(sqlite3.connect(path)) as db:
+        row = db.execute("SELECT text FROM translations WHERE passage = ?", (passage,)).fetchone()
+    return None if row is None else row[0]
+
+
+def read_senses(path: Path, word: str) -> tuple[tuple[str, ...], ...]:
+    with closing(sqlite3.connect(path)) as db:
+        row = db.execute("SELECT glosses FROM senses WHERE word = ?", (word,)).fetchone()
+    return () if row is None else tuple(map(tuple, json.loads(row[0])))
+
+
+def read_page(path: Path, id: str) -> Page | None:
+    with closing(sqlite3.connect(path)) as db:
+        row = db.execute("SELECT * FROM pages WHERE id = ?", (id,)).fetchone()
+    return None if row is None else Page(*row)
+
+
 def sample_pack(source: Path, target: Path, every: int) -> None:
     """Copy every n-th passage of a pack, with its occurrences and the items they use."""
     target.unlink(missing_ok=True)
@@ -91,6 +152,10 @@ def sample_pack(source: Path, target: Path, every: int) -> None:
             INSERT INTO words SELECT * FROM source.words
                 WHERE id IN (SELECT item FROM occurrences);
             INSERT INTO grammar SELECT * FROM source.grammar;
+            INSERT INTO translations SELECT * FROM source.translations
+                WHERE passage IN (SELECT id FROM passages);
+            INSERT INTO senses SELECT * FROM source.senses WHERE word IN (SELECT id FROM words);
+            INSERT INTO pages SELECT * FROM source.pages;
         """)
         db.commit()
         db.execute("DETACH DATABASE source")

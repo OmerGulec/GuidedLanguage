@@ -13,7 +13,8 @@ _ID = "ent_seq"
 _SPELLINGS = "k_ele/keb"
 _READINGS = "r_ele/reb"
 _PRIORITIES = ("k_ele/ke_pri", "r_ele/re_pri")
-_FIRST_SENSE_GLOSSES = "sense[1]/gloss"
+_SENSES = "sense"
+_GLOSSES = "gloss"
 _PARTS_OF_SPEECH = "sense/pos"
 
 _ENTITY = re.compile(r"&([\w-]+);")
@@ -25,9 +26,14 @@ class Entry:
     id: int
     spellings: tuple[str, ...]
     readings: tuple[str, ...]
-    glosses: tuple[str, ...]
+    # Glosses per sense, in JMdict's order. The first sense is the main meaning (004).
+    senses: tuple[tuple[str, ...], ...]
     parts_of_speech: frozenset[str]
     common: bool
+
+    @property
+    def glosses(self) -> tuple[str, ...]:
+        return self.senses[0] if self.senses else ()
 
 
 def read_jmdict(path: Path) -> Iterator[Entry]:
@@ -48,7 +54,9 @@ def _entry(element: ET.Element) -> Entry:
         id=int(_texts(element, _ID)[0]),
         spellings=_texts(element, _SPELLINGS),
         readings=_texts(element, _READINGS),
-        glosses=_texts(element, _FIRST_SENSE_GLOSSES),
+        senses=tuple(
+            glosses for sense in element.iterfind(_SENSES) if (glosses := _texts(sense, _GLOSSES))
+        ),
         parts_of_speech=frozenset(_texts(element, _PARTS_OF_SPEECH)),
         common=bool(priorities & COMMON_TAGS),
     )
