@@ -24,6 +24,7 @@ Where things stand, for whoever picks up the work next. Decisions are in `docs/d
 From `server/`:
 
 - `uv run python -m pipeline.build` downloads JMdict and Tatoeba (Japanese, English and the links between them) into `data/` (gitignored) and writes `data/packs/ja/pack.sqlite`, about 2.5 min. The environment must allow `downloads.tatoeba.org` and `www.edrdg.org`.
+- `uv run python -m api.accounts EMAIL` makes an account (asks for the password), then `uv run python -m api [PORT]` starts the server on every address of this computer, port 8000 by default, so a phone on the same network can reach it. It loads the pack (about 18 s) and keeps users in `data/users.sqlite`. Only the API exists so far; there is no web app to open yet.
 - `uv run python -m pipeline.sample` rewrites `tests/fixtures/pack.sqlite` from the built pack.
 - `uv run python -m pipeline.coverage`: coverage by number of words known.
 - `uv run python -m sim.report`: six months of simulated workload, about 4 min.
@@ -56,7 +57,7 @@ From `server/`:
 3. The first version (`docs/v1.md`, agreed), continuing in this order:
    1. Speed the study step (about 0.5 s now): keep each learner's values with their state and update them per event; give `core.passages.card_passages` the pack's column index instead of rebuilding it per call (a small core change, show the owner).
    2. API: `GET /api/today` (the numbered steps with amounts and progress), the Library (next passage, reading events), item pages (word, grammar from headers, grammar list in computed order with status), import (Renshuu key, word list) and the grammar list for placement (replacing the checklist artifact; carry over its 28 ticks, read with the ArtifactData tool), export of events. Then the ID check at pack load and `id_map` (011), and the display-policy serialiser (011).
-   3. Dev server starting as any named learner, with time travel (012); a server entry point (`uvicorn` with `create_app(USERS, PACK, now)`).
+   3. Dev server starting as any named learner, with time travel (012); the plain server is `python -m api`.
    4. Web: Svelte 5 single-page app; tokens and primitives first (status, Design), types generated from the API schema; Review, Today, Library, Dictionary and pages, Start, You. Playwright screenshots per named learner.
    5. Next test set (`pipeline.testset choose test-2 4`): the 22 unsettled uses; the noun-modifying clauses need sentences found by the labellers, since no rule finds them.
 4. Anki review logs, when someone needs them.
