@@ -14,8 +14,9 @@ from pipeline import grammar as grammar_rules
 from pipeline.labels import SAMPLES, Place, read_agreed
 from pipeline.lessons import GRAMMAR, Lesson, read_lessons
 from pipeline.splits import SPLITS, read_splits, split
-from store.pack import Page, write_pack, write_texts
+from store.pack import write_pack
 from store.paths import CONTENT, DATA, PACK
+from store.texts import Page, write_texts
 
 JMDICT_URL = "https://www.edrdg.org/pub/Nihongo/JMdict_e.gz"
 TATOEBA_URL = "https://downloads.tatoeba.org/exports/per_language/jpn/jpn_sentences.tsv.bz2"

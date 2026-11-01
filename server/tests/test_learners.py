@@ -1,4 +1,5 @@
 import sqlite3
+from dataclasses import replace
 from datetime import timedelta
 from pathlib import Path
 
@@ -41,3 +42,8 @@ def test_the_kept_state_always_equals_deriving_the_whole_history(db: sqlite3.Con
     add(4, Reviewed(CARD, passed=True, method="self"))
     add(4, Retracted("e5"))
     add(5, Reviewed(CARD, passed=True, method="self"))
+
+    later_day = replace(TOKYO, day_start_hour=TOKYO.day_start_hour + 6)
+    everything = [event for _, event in history(db, owner)]
+    assert learners.state(owner, later_day) == derive(everything, later_day)
+    assert learners.state(owner, later_day) != derive(everything, TOKYO)

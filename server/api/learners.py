@@ -14,6 +14,8 @@ from store.events import history
 @dataclass(frozen=True, slots=True)
 class _Held:
     state: State
+    # Derivation applies the current settings to the whole history (013).
+    settings: Settings
     # The last event applied, in arrival order and in replay order; None before any.
     sequence: int
     latest: tuple[datetime, str] | None
@@ -27,9 +29,12 @@ class Learners:
 
     def state(self, account: int, settings: Settings) -> State:
         """Advanced with new events only when they all come after what it holds and retract
-        nothing; an undo, an import of older history or a late event re-derives (013)."""
+        nothing; an undo, an import of older history, a late event or other settings re-derive
+        (013)."""
         with self._lock:
             held = self._held.get(account)
+            if held is not None and held.settings != settings:
+                held = None
             after = 0 if held is None else held.sequence
             new = history(self._db, account, after)
             if held is not None and not new:
@@ -44,13 +49,8 @@ class Learners:
                 state = derive(everything, settings)
                 latest = max((_order(e) for e in everything), default=None)
             sequence = new[-1][0] if new else after
-            self._held[account] = _Held(state, sequence, latest)
+            self._held[account] = _Held(state, settings, sequence, latest)
             return state
-
-    def forget(self, account: int) -> None:
-        """For when what derivation depends on changes, such as the learner's settings."""
-        with self._lock:
-            self._held.pop(account, None)
 
 
 def _extends(held: _Held, events: list[Event]) -> bool:

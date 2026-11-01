@@ -1,5 +1,6 @@
 """The pack as the API serves it: core's view for planning, and what the learner reads."""
 
+import sqlite3
 from collections import defaultdict
 from dataclasses import dataclass
 from pathlib import Path
@@ -14,10 +15,10 @@ from core.pack import Column, Pack
 from core.passages import SETTLED
 from core.settings import Settings
 from core.state import State
-from store.pack import (
-    read_eligible,
+from store.pack import read_eligible, read_pack
+from store.texts import (
+    open_texts,
     read_occurrences,
-    read_pack,
     read_page,
     read_passage,
     read_senses,
@@ -77,7 +78,7 @@ class PassageView(BaseModel):
 
 @dataclass(frozen=True, slots=True, eq=False)
 class Library:
-    path: Path
+    db: sqlite3.Connection
     pack: Pack
     ranking: Ranking
     eligible: NDArray[np.bool_]
@@ -87,14 +88,14 @@ class Library:
 def load_library(path: Path, settings: Settings) -> Library:
     pack, eligible = read_pack(path), read_eligible(path)
     columns = {column: i for i, column in enumerate(pack.columns)}
-    return Library(path, pack, ranking(pack, settings, eligible), eligible, columns)
+    return Library(open_texts(path), pack, ranking(pack, settings, eligible), eligible, columns)
 
 
 def word_view(library: Library, id: str) -> WordView | None:
-    word = read_word(library.path, id)
+    word = read_word(library.db, id)
     if word is None:
         return None
-    senses = read_senses(library.path, id)
+    senses = read_senses(library.db, id)
     return WordView(
         id=id,
         spellings=list(word.spellings),
@@ -105,10 +106,10 @@ def word_view(library: Library, id: str) -> WordView | None:
 
 
 def grammar_view(library: Library, id: str) -> GrammarView | None:
-    page = read_page(library.path, id)
+    page = read_page(library.db, id)
     if page is None or page.kind == "form":
         return None
-    form = None if page.form is None else read_page(library.path, page.form)
+    form = None if page.form is None else read_page(library.db, page.form)
     return GrammarView(
         id=id,
         grammar=page.kind,
@@ -131,14 +132,15 @@ def passage_view(
 ) -> PassageView | None:
     """A passage with every item in it, so a tap needs no further request. Values are the
     learner's, for reading."""
-    passage = read_passage(library.path, id)
+    passage = read_passage(library.db, id)
     if passage is None:
         return None
 
     forms: dict[tuple[int, int], list[tuple[str, float, str | None]]] = defaultdict(list)
-    for o in read_occurrences(library.path, id):
+    for o in read_occurrences(library.db, id):
         forms[o.start, o.end].append((o.item, o.probability, None if o.phonetic else o.spelling))
-    taught = state.introduced.keys() | state.marks.keys()
+    known = {item for item, mark in state.marks.items() if mark.status == "known"}
+    taught = state.introduced.keys() | known
     spans: list[Span] = []
     for (start, end), found in sorted(forms.items()):
         settled = [item for item, p, _ in found if p >= SETTLED]
@@ -150,7 +152,7 @@ def passage_view(
     return PassageView(
         id=id,
         text=passage.text,
-        translation=read_translation(library.path, id),
+        translation=read_translation(library.db, id),
         source=passage.source,
         position=passage.position,
         spans=spans,

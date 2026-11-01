@@ -4,28 +4,20 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
-from api.app import create_app
 from core import events as core
-from store.accounts import create_account
 from store.database import open_database
 from store.events import history
-from tests.history import at
-
-NOW = at(1, 9)
-OWNER = {"email": "owner@example.com", "password": "kana and kanji"}
-FIXTURE = Path(__file__).parent / "fixtures" / "pack.sqlite"
+from tests.server import NOW, OWNER, app_client, owner_database
 
 
 @pytest.fixture
 def users(tmp_path: Path) -> Path:
-    path = tmp_path / "users.sqlite"
-    create_account(open_database(path), OWNER["email"], OWNER["password"], NOW)
-    return path
+    return owner_database(tmp_path)
 
 
 @pytest.fixture
 def client(users: Path) -> TestClient:
-    return TestClient(create_app(users, FIXTURE, clock=lambda: NOW))
+    return app_client(users)
 
 
 def event(id: str, when: datetime, **payload: object) -> dict[str, object]:

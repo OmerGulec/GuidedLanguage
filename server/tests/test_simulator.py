@@ -1,5 +1,4 @@
 from collections import Counter
-from pathlib import Path
 
 import pytest
 
@@ -13,9 +12,9 @@ from core.values import values
 from sim.learner import Learner, Simulation
 from sim.learners import START, day_zero, heavy_user, importer, three_months
 from store.pack import read_eligible, read_pack
+from tests.packs import FIXTURE
 
 SETTINGS = Settings()
-FIXTURE = Path(__file__).parent / "fixtures" / "pack.sqlite"
 PACK = read_pack(FIXTURE)
 RANKING = ranking(PACK, Settings(), read_eligible(FIXTURE))
 

@@ -36,7 +36,7 @@ class _Sentence(BaseModel):
 
 
 def read_agreed(folder: Path) -> dict[Place, str]:
-    agreed: dict[Place, str] = {}
+    labels: dict[Place, str] = {}
     for sentences in sorted(p for p in folder.glob("*.jsonl") if p.stem.count(".") == 0):
         labellings = sorted(folder.glob(f"{sentences.stem}.*.jsonl"))
         if not labellings:
@@ -45,13 +45,13 @@ def read_agreed(folder: Path) -> dict[Place, str]:
             raise ValueError(f"{sentences.name}: {len(labellings)} labellings, not two")
         places = _places(sentences)
         first, second = (read_labels(path) for path in labellings)
-        agreed |= settled(places, first, second)
-    return agreed
+        labels |= agreed(places, first, second)
+    return labels
 
 
-def settled(places: Mapping[str, list[int]], first: Labels, second: Labels) -> dict[Place, str]:
+def agreed(places: Mapping[str, list[int]], first: Labels, second: Labels) -> dict[Place, str]:
     """Forms whose use both labellings are sure of."""
-    agreed: dict[Place, str] = {}
+    labels: dict[Place, str] = {}
     for passage, starts in places.items():
         pairs = zip(first.get(passage, []), second.get(passage, []), strict=False)
         for at, (mine, theirs) in zip(starts, pairs, strict=False):
@@ -59,8 +59,8 @@ def settled(places: Mapping[str, list[int]], first: Labels, second: Labels) -> d
                 continue
             use, chance = max(mine.items(), key=lambda pair: pair[1])
             if chance >= SURE and theirs.get(use, 0.0) >= SURE:
-                agreed[passage, at] = use
-    return agreed
+                labels[passage, at] = use
+    return labels
 
 
 def _places(path: Path) -> dict[str, list[int]]:

@@ -2,14 +2,10 @@ from pathlib import Path
 
 from core.pack import Column, GrammarItem, Occurrence, Passage, Source, Word
 from store.pack import (
-    Page,
     read_pack,
-    read_page,
-    read_senses,
-    read_translation,
     write_pack,
-    write_texts,
 )
+from store.texts import Page, open_texts, read_page, read_senses, read_translation, write_texts
 
 
 def test_read_pack_merges_sound_spellings_and_keeps_kanji_spellings(tmp_path: Path) -> None:
@@ -65,8 +61,9 @@ def test_texts_for_the_learner_come_back_as_written(tmp_path: Path) -> None:
         path, {"a": "I drink."}, {"w:1": [["to drink", "to swallow"], ["to smoke"]]}, [page]
     )
 
-    assert read_translation(path, "a") == "I drink."
-    assert read_translation(path, "b") is None
-    assert read_senses(path, "w:1") == (("to drink", "to swallow"), ("to smoke",))
-    assert read_page(path, "teiru") == page
-    assert read_page(path, "teiru.ongoing") is None
+    db = open_texts(path)
+    assert read_translation(db, "a") == "I drink."
+    assert read_translation(db, "b") is None
+    assert read_senses(db, "w:1") == (("to drink", "to swallow"), ("to smoke",))
+    assert read_page(db, "teiru") == page
+    assert read_page(db, "teiru.ongoing") is None

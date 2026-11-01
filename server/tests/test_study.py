@@ -6,26 +6,18 @@ import pytest
 from fastapi.testclient import TestClient
 from pydantic import TypeAdapter
 
-from api.app import create_app
 from api.library import GrammarView, PassageView, WordView
 from api.study import CardStep, DoneStep, MeetingStep, PageStep, Step
 from core.settings import Settings
-from store.accounts import create_account
-from store.database import open_database
-from tests.history import at
+from tests.server import NOW, OWNER, app_client, owner_database
 
-NOW = at(1, 9)
-OWNER = {"email": "owner@example.com", "password": "kana and kanji"}
-FIXTURE = Path(__file__).parent / "fixtures" / "pack.sqlite"
 LONGEST_SESSION = 100
 STEP = TypeAdapter[CardStep | PageStep | MeetingStep | DoneStep](Step)
 
 
 @pytest.fixture
 def client(tmp_path: Path) -> TestClient:
-    users = tmp_path / "users.sqlite"
-    create_account(open_database(users), OWNER["email"], OWNER["password"], NOW)
-    client = TestClient(create_app(users, FIXTURE, clock=lambda: NOW))
+    client = app_client(owner_database(tmp_path))
     client.post("/api/session", json=OWNER)
     return client
 

@@ -10,14 +10,16 @@ reads (pipeline.labels).
 import json
 import random
 import sys
-from collections import defaultdict
+from collections import Counter, defaultdict
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 
 import numpy as np
+from numpy.typing import NDArray
 from pydantic import BaseModel, ConfigDict
 
-from core.candidates import ranked, ranking
+from core.candidates import Ranking, ranked, ranking
+from core.pack import Pack, Passage
 from core.passages import SETTLED
 from core.settings import Settings
 from pipeline.labels import SAMPLES
@@ -65,61 +67,17 @@ Every form of every sentence must appear, with every use it lists.
 def choose(name: str, parts: int) -> None:
     pack, eligible = read_pack(PACK), read_eligible(PACK)
     pack_ranking = ranking(pack, Settings(), eligible)
-
-    settled = (pack.appearance_probabilities >= SETTLED) & eligible[pack.appearance_passages]
-    settled_count: dict[str, int] = defaultdict(int)
-    settled_columns: list[int] = pack.appearance_columns[settled].tolist()
-    for column in settled_columns:
-        settled_count[pack.columns[column].item] += 1
-    uses = [i for i, item in pack.grammar.items() if item.kind == "use"]
-    order = sorted(uses, key=lambda use: (-pack_ranking.rank.get(use, 0.0), use))
-    targets = [use for use in order if settled_count[use] < WANTED][:TARGET_USES]
-
-    # The rank of a passage's rarest word; a word the dictionary lacks makes it hard.
-    words = ranked(
-        {i: f for i, f in pack_ranking.frequency.items() if i not in pack.grammar}, set()
-    )
-    word_rank = {item: n for n, item in enumerate(words) if item.startswith("w:")}
-    rarest = np.zeros(len(pack.passages), dtype=np.int64)
-    column_rank = np.array(
-        [word_rank.get(c.item, 0 if c.item in pack.grammar else len(words)) for c in pack.columns]
-    )
-    np.maximum.at(rarest, pack.appearance_passages, column_rank[pack.appearance_columns])
-
     texts = {p.id: p for p in read_passages(PACK)}
-    others = (p for p in SAMPLES.glob("*.jsonl") if p.name.split(".")[0] != name)
-    labelled = {line_id for path in others for line_id in _ids(path)}
-    easy = {
-        passage
-        for i, passage in enumerate(pack.passages)
-        if eligible[i]
-        and rarest[i] < COMMON_WORDS
-        and len(texts[passage].text) <= LONGEST
-        and passage not in labelled
-    }
+
+    targets = _targets(pack, pack_ranking, eligible)
+    easy = _easy(pack, pack_ranking, eligible, texts, name)
     forms: dict[str, list[UnsettledForm]] = defaultdict(list)
     for form in read_unsettled_forms(PACK):
         if form.passage in easy:
             forms[form.passage].append(form)
-
     chosen = cover(forms, targets, PER_FORM)
-    lines = [
-        {
-            "id": passage,
-            "tatoeba": texts[passage].position,
-            "text": texts[passage].text,
-            "forms": [
-                {
-                    "n": n,
-                    "text": texts[passage].text[f.start : f.end],
-                    "at": f.start,
-                    "uses": f.uses,
-                }
-                for n, f in enumerate(forms[passage])
-            ],
-        }
-        for passage in chosen
-    ]
+
+    lines = [_line(texts[passage], forms[passage]) for passage in chosen]
     _write_lines(SAMPLES / f"{name}.jsonl", lines)
     met = sorted({use for passage in chosen for form in forms[passage] for use in form.uses})
     (SAMPLES / f"{name}.guide.md").write_text(_guide(name, met))
@@ -130,6 +88,58 @@ def choose(name: str, parts: int) -> None:
     print(f"targets: {' '.join(targets)}")
     count = sum(len(forms[passage]) for passage in chosen)
     print(f"{len(lines)} sentences, {count} forms, in {folder}")
+
+
+def _targets(pack: Pack, pack_ranking: Ranking, eligible: NDArray[np.bool_]) -> list[str]:
+    """The first uses, in rank order, with fewer settled passages than wanted."""
+    settled = (pack.appearance_probabilities >= SETTLED) & eligible[pack.appearance_passages]
+    settled_columns: list[int] = pack.appearance_columns[settled].tolist()
+    count = Counter(pack.columns[column].item for column in settled_columns)
+    uses = [i for i, item in pack.grammar.items() if item.kind == "use"]
+    order = sorted(uses, key=lambda use: (-pack_ranking.rank.get(use, 0.0), use))
+    return [use for use in order if count[use] < WANTED][:TARGET_USES]
+
+
+def _easy(
+    pack: Pack,
+    pack_ranking: Ranking,
+    eligible: NDArray[np.bool_],
+    texts: Mapping[str, Passage],
+    name: str,
+) -> set[str]:
+    """Short, translated passages of common words that no other set has labelled."""
+    # The rank of a passage's rarest word; a word the dictionary lacks makes it hard.
+    frequency = {i: f for i, f in pack_ranking.frequency.items() if i not in pack.grammar}
+    words = ranked(frequency, set())
+    word_rank = {item: n for n, item in enumerate(words) if item.startswith("w:")}
+    rarest = np.zeros(len(pack.passages), dtype=np.int64)
+    column_rank = np.array(
+        [word_rank.get(c.item, 0 if c.item in pack.grammar else len(words)) for c in pack.columns]
+    )
+    np.maximum.at(rarest, pack.appearance_passages, column_rank[pack.appearance_columns])
+
+    others = (p for p in SAMPLES.glob("*.jsonl") if p.name.split(".")[0] != name)
+    labelled = {line_id for path in others for line_id in _ids(path)}
+    return {
+        passage
+        for i, passage in enumerate(pack.passages)
+        if eligible[i]
+        and rarest[i] < COMMON_WORDS
+        and len(texts[passage].text) <= LONGEST
+        and passage not in labelled
+    }
+
+
+def _line(passage: Passage, forms: Sequence[UnsettledForm]) -> dict[str, object]:
+    return {
+        "id": passage.id,
+        "tatoeba": passage.position,
+        "text": passage.text,
+        "forms": [
+            {"n": n, "text": passage.text[f.start : f.end], "at": f.start, "uses": f.uses}
+            for n, f in enumerate(forms)
+        ],
+    }
 
 
 class FormToLabel(BaseModel):

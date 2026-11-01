@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from pipeline.labels import read_agreed, settled
+from pipeline.labels import agreed, read_agreed
 from pipeline.splits import Labels
 
 PLACES = {"s": [3, 7, 9, 12]}
@@ -25,8 +25,8 @@ SECOND: Labels = {
 
 
 def test_a_label_stands_only_where_both_models_are_sure_of_the_same_use() -> None:
-    assert settled(PLACES, FIRST, SECOND) == {("s", 3): "wa.topic"}
-    assert settled(PLACES, SECOND, FIRST) == {("s", 3): "wa.topic"}
+    assert agreed(PLACES, FIRST, SECOND) == {("s", 3): "wa.topic"}
+    assert agreed(PLACES, SECOND, FIRST) == {("s", 3): "wa.topic"}
 
 
 def test_a_set_waiting_for_labels_is_left_out_and_a_half_labelled_one_refused(
@@ -36,5 +36,5 @@ def test_a_set_waiting_for_labels_is_left_out_and_a_half_labelled_one_refused(
     assert read_agreed(tmp_path) == {}
 
     (tmp_path / "waiting.first.jsonl").write_text("")
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="not two"):
         read_agreed(tmp_path)

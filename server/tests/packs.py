@@ -1,9 +1,12 @@
 from collections.abc import Iterable, Mapping, Set
+from pathlib import Path
 
 import numpy as np
 from numpy.typing import NDArray
 
 from core.pack import Column, GrammarItem, Pack
+
+FIXTURE = Path(__file__).parent / "fixtures" / "pack.sqlite"
 
 
 def everywhere(pack: Pack) -> NDArray[np.bool_]:

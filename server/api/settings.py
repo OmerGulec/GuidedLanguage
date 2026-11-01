@@ -62,8 +62,6 @@ def routes(server: Server, signed_in: Callable[..., int]) -> APIRouter:
     @router.put("")
     def put(body: LearnerSettings, account: Annotated[int, Depends(signed_in)]) -> LearnerSettings:
         write_settings(server.db, account, body.model_dump_json())
-        # Derivation applies the current settings to the whole history (013).
-        server.learners.forget(account)
         return body
 
     return router
