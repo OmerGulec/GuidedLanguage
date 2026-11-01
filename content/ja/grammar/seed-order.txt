@@ -14,6 +14,7 @@ kosoado
 ga.subject
 to.and
 ya
+toka
 ne
 yo
 kara.from
@@ -33,18 +34,24 @@ e
 ni.place
 de.place
 de.means
+de.cause
 to.with
 ni.target
+ni.rate
+o.motion
 masu-stem
+ni.purpose
 masu
 volitional.invite
 masen-ka
 te-ta
 nai-form
 te.and
+te.cause
 te-kudasai
 teiru.ongoing
 teiru.state
+transitivity
 ga.object
 tai
 adverbial
@@ -67,6 +74,8 @@ yori
 hou-ga
 darou.guess
 darou.confirm
+janai
+kamoshirenai
 no.nominalizer
 nda
 no.one
@@ -78,7 +87,8 @@ kana
 relative.gap
 relative.role
 relative.content
-relative.no-subject
+relative.no-as-subject
+mama
 long-modifiers
 toki
 mae-ni
@@ -98,7 +108,6 @@ nakereba-naranai
 hou-ga-ii
 beki
 naide
-kamoshirenai
 
 # More verb forms
 potential-form
@@ -110,9 +119,11 @@ ba-form
 ba
 tara.if
 tara.discovery
-to-conditional
+to-conditional.whenever
+to-conditional.discovery
 nara
 tara-dou
+ba-ii
 
 # Seeming and expecting
 tsumori
@@ -140,6 +151,7 @@ te-oku
 te-shimau.complete
 te-shimau.regret
 te-aru
+teiru.habit
 te-iku.away
 te-iku.change
 te-kuru.toward
@@ -208,16 +220,13 @@ ni-totte
 zutsu
 kurai
 hodo
-demo
+demo.even
+demo.example
 nado
 made-ni
 
 # Later, needed by the library
-de.cause
 de.scope
-o.motion
-ni.rate
-te.cause
 aida.throughout
 aida.within
 wake.reason
