@@ -1,12 +1,20 @@
 import json
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 
-from core.cards import Card
+from core.cards import LADDERS, Card, LadderKind
 from core.events import Introduced, Reviewed
 from core.pack import Word
 from core.settings import Settings
 from core.state import derive
-from integrations.renshuu import RenshuuWord, replay
+from integrations.renshuu import (
+    GRAMMAR_MAP,
+    RenshuuGrammar,
+    RenshuuWord,
+    read_grammar_map,
+    replay,
+    replay_grammar,
+)
+from pipeline.lessons import GRAMMAR, read_lessons
 
 AU = Word("w:1198180", ("会う", "逢う"), ("あう",), ("to meet",), common=True)
 STUDY = Word("w:1403020", ("勉強",), ("べんきょう",), ("study",), common=True)
@@ -85,3 +93,51 @@ def test_the_replayed_history_ends_on_the_last_answer() -> None:
     card = state.cards[Card((AU.id,), "会う", "recognize").id]
     assert card.graduated
     assert card.memory.last_review == datetime(2025, 3, 1, 12, tzinfo=UTC)
+
+
+def renshuu_point(term: int, answers: list[tuple[str, str]], introduced: str) -> RenshuuGrammar:
+    history = [{"date": d, "correct": c} for d, c in answers]
+    vectors = {"Main": {"name": "Main", "study_history": history}}
+    progress = {"introduced_date": introduced, "study_vectors": vectors}
+    point = {"id": term, "title_japanese": f"point {term}", "user_data": progress}
+    return RenshuuGrammar.model_validate_json(json.dumps(point))
+
+
+def test_grammar_points_that_share_a_card_make_one_review_a_day_and_systems_are_introduced() -> (
+    None
+):
+    exercised = {1: ("ka.question/sentence",), 2: ("ka.question/sentence", "adjective-classes")}
+    points = [
+        renshuu_point(1, [("2025/01/02", "yes")], "2025/01/01"),
+        renshuu_point(2, [("2025/01/02", "no"), ("2025/01/03", "yes")], "2024/12/30"),
+        renshuu_point(3, [("2025/01/02", "yes")], "2025/01/01"),
+    ]
+    imported = replay_grammar(points, exercised)
+    reviews = [
+        (e.payload.card, e.payload.passed)
+        for e in imported.events
+        if isinstance(e.payload, Reviewed)
+    ]
+    introduced = {
+        e.payload.item: e.at.date() for e in imported.events if isinstance(e.payload, Introduced)
+    }
+    assert reviews == [("ka.question/sentence", False), ("ka.question/sentence", True)]
+    assert introduced == {
+        "ka.question": date(2024, 12, 30),
+        "adjective-classes": date(2024, 12, 30),
+    }
+    assert imported.unmatched == ["point 3"]
+
+
+def test_the_grammar_map_names_items_and_rungs_of_their_ladders() -> None:
+    lessons = read_lessons(GRAMMAR)
+    ladders: dict[str, LadderKind] = {"use": "grammar", "formation": "formation"}
+    for targets in read_grammar_map(GRAMMAR_MAP).values():
+        for target in targets:
+            card = Card.parse(target) if "/" in target else None
+            lesson = lessons[card.items[0] if card else target]
+            if card is None:
+                assert lesson.header.kind == "system", target
+            else:
+                rungs = [rung.name for rung in LADDERS[ladders[lesson.header.kind]]]
+                assert card.rung in rungs, target

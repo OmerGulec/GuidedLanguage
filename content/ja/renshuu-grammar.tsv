@@ -1,0 +1,28 @@
+# Renshuu grammar points and what each exercises here. A card gets the point's answers as
+# reviews; an item named alone (a system) is only introduced.
+# Renshuu term	Renshuu title	exercised here
+131	で: at, in	de.place/sentence
+383	に: at (a time)	ni.time/sentence
+421	を: direct object	o.object/sentence
+422	も: also	mo.also/sentence
+555	ます/ません	masu/sentence nai/sentence
+556	ました/ませんでした	masu/sentence ta/sentence nai/sentence
+818	と: A and B	to.and/sentence
+900	がある: there is	ga.subject/sentence
+902	がいる: there is	ga.subject/sentence
+925	AはBです	wa.topic/sentence da/sentence desu/sentence
+926	Adjectives before a noun	adjective-classes
+927	AのB	no.link/sentence
+928	Adjectives, negative	nai/sentence i-adjective-forms/undo
+929	Adjectives, linking	te.and/sentence i-adjective-forms/undo
+930	すき・きらい・ほしい	ga.object/sentence
+931	Questions: yes or no	ka.question/sentence
+932	Questions: what	ka.question/sentence
+933	Questions: where	ka.question/sentence
+934	Questions: who	ka.question/sentence
+936	Questions: what kind	ka.question/sentence
+937	行く・来る・帰る: go to	ni.goal/sentence
+938	行く・来る・帰る: come to	ni.goal/sentence
+939	行く・来る・帰る: return to	ni.goal/sentence
+940	でした	desu/sentence ta/sentence
+941	ではありませんでした	desu/sentence ta/sentence nai/sentence
