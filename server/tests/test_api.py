@@ -13,6 +13,7 @@ from tests.history import at
 
 NOW = at(1, 9)
 OWNER = {"email": "owner@example.com", "password": "kana and kanji"}
+FIXTURE = Path(__file__).parent / "fixtures" / "pack.sqlite"
 
 
 @pytest.fixture
@@ -24,7 +25,7 @@ def users(tmp_path: Path) -> Path:
 
 @pytest.fixture
 def client(users: Path) -> TestClient:
-    return TestClient(create_app(users, clock=lambda: NOW))
+    return TestClient(create_app(users, FIXTURE, clock=lambda: NOW))
 
 
 def event(id: str, when: datetime, **payload: object) -> dict[str, object]:

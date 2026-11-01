@@ -33,6 +33,7 @@ CREATE TABLE occurrences (
     probability REAL NOT NULL
 );
 CREATE INDEX occurrences_by_item ON occurrences (item);
+CREATE INDEX occurrences_by_passage ON occurrences (passage);
 CREATE TABLE translations (passage TEXT PRIMARY KEY REFERENCES passages, text TEXT NOT NULL);
 CREATE TABLE senses (word TEXT PRIMARY KEY REFERENCES words, glosses TEXT NOT NULL);
 CREATE TABLE pages (
@@ -136,6 +137,40 @@ def read_page(path: Path, id: str) -> Page | None:
     with closing(sqlite3.connect(path)) as db:
         row = db.execute("SELECT * FROM pages WHERE id = ?", (id,)).fetchone()
     return None if row is None else Page(*row)
+
+
+def read_word(path: Path, id: str) -> Word | None:
+    with closing(sqlite3.connect(path)) as db:
+        row = db.execute(
+            "SELECT spellings, readings, glosses, common FROM words WHERE id = ?", (id,)
+        ).fetchone()
+    if row is None:
+        return None
+    spellings, readings, glosses, common = row
+    return Word(
+        id,
+        tuple(json.loads(spellings)),
+        tuple(json.loads(readings)),
+        tuple(json.loads(glosses)),
+        bool(common),
+    )
+
+
+def read_passage(path: Path, id: str) -> Passage | None:
+    with closing(sqlite3.connect(path)) as db:
+        row = db.execute("SELECT * FROM passages WHERE id = ?", (id,)).fetchone()
+    return None if row is None else Passage(*row)
+
+
+def read_occurrences(path: Path, passage: str) -> list[Occurrence]:
+    """A passage's occurrences in reading order, every use a grammar form may have among them."""
+    with closing(sqlite3.connect(path)) as db:
+        rows = db.execute(
+            "SELECT * FROM occurrences WHERE passage = ? ORDER BY start, end", (passage,)
+        ).fetchall()
+    return [
+        Occurrence(p, item, s, bool(ph), start, end, pr) for p, item, s, ph, start, end, pr in rows
+    ]
 
 
 def sample_pack(source: Path, target: Path, every: int) -> None:
