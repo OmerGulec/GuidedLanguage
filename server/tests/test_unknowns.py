@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 from core.pack import Column
 from core.unknowns import unknowns
@@ -23,3 +24,12 @@ def test_raising_a_value_never_raises_a_passages_unknowns() -> None:
         before = rng.random(len(pack.columns))
         after = np.maximum(before, rng.random(len(pack.columns)))
         assert np.all(unknowns(after, pack) <= unknowns(before, pack))
+
+
+def test_a_grammar_use_counts_by_how_likely_it_is_meant() -> None:
+    topic, contrast = Column("wa.topic", None), Column("wa.contrast", None)
+    chances = {topic: 0.8, contrast: 0.2}
+    pack = pack_of(
+        (topic, contrast, KOTO), probabilities=chances, grammar={topic.item, contrast.item}
+    )
+    assert unknowns(np.array([1.0, 0.0, 0.5]), pack).tolist() == pytest.approx([0.7])

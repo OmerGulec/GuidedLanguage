@@ -29,6 +29,13 @@ class Word:
 
 
 @dataclass(frozen=True, slots=True)
+class GrammarUse:
+    id: str
+    # Nuance never counts as unknown (007).
+    nuance: bool
+
+
+@dataclass(frozen=True, slots=True)
 class Passage:
     id: str
     source: str
@@ -44,6 +51,9 @@ class Occurrence:
     phonetic: bool
     start: int
     end: int
+    # That the item is the one meant here: 1 for a word; for a grammar use, its share of the
+    # form found at this span (006).
+    probability: float
 
 
 def passage_id(source: str, text: str) -> str:
@@ -64,6 +74,10 @@ class Pack:
     sources: tuple[str, ...]
     passage_sources: NDArray[np.int32]
     columns: tuple[Column, ...]
-    # Each appearance is one column present in one passage, at most once per passage.
+    # Each appearance is one column present in one passage, at most once per passage, with the
+    # highest probability it has there.
     appearance_passages: NDArray[np.int32]
     appearance_columns: NDArray[np.int32]
+    appearance_probabilities: NDArray[np.float64]
+    grammar: frozenset[str]
+    nuance: frozenset[str]

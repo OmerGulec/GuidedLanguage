@@ -50,6 +50,13 @@ def planned(history: list[Event], day: int, settings: Settings = TOKYO, **situat
     )
 
 
+def test_grammar_is_not_ranked_among_words() -> None:
+    topic = Column("wa.topic", None)
+    assert ranking(pack_of((IN_KANJI, topic), (topic,), grammar={topic.item})).frequency == {
+        WAKARU: 1
+    }
+
+
 def test_new_items_start_in_their_most_common_spelling_most_frequent_first() -> None:
     assert candidates(derive([], TOKYO), RANKING, "reader") == [RECOGNIZE, KOTO_RECOGNIZE]
 

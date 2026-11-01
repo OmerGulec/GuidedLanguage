@@ -1,14 +1,17 @@
 import bz2
 import urllib.request
 from collections import Counter
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 
-from core.pack import Occurrence, Passage, Source, Word, passage_id
-from langs.ja.analyser import Analyser, Lexicon, read_readings, word
+from core.pack import GrammarUse, Occurrence, Passage, Source, Word, passage_id
+from langs.ja.analyser import Analyser, Lexicon, Link, Token, read_readings, word
 from langs.ja.checks import check_links
 from langs.ja.dictionary import read_jmdict
+from langs.ja.grammar import Found, Grammar, read_rules
+from pipeline import grammar as grammar_rules
+from pipeline.lessons import GRAMMAR, read_lessons
 from store.pack import write_pack
 from store.paths import CONTENT, DATA, PACK
 
@@ -38,6 +41,9 @@ def build() -> None:
     entries = list(read_jmdict(fetch(JMDICT_URL)))
     lexicon = Lexicon(entries, read_readings(CONTENT / "readings.tsv"))
     analyser = Analyser()
+    grammar = Grammar(read_rules(grammar_rules.RULES))
+    lessons = read_lessons(GRAMMAR).values()
+    uses = [GrammarUse(u.id, u.header.nuance) for u in lessons if u.header.kind == "use"]
     words = {w.id: w for w in map(word, entries)}
     unresolved: set[str] = set()
     passages: dict[str, Passage] = {}
@@ -47,38 +53,63 @@ def build() -> None:
         if pid in passages:
             continue
         passages[pid] = Passage(pid, TATOEBA.id, number, text)
-        for token, entry in lexicon.words(analyser.tokens(text)):
-            link = lexicon.link(token, entry)
+        tokens = analyser.tokens(text)
+        forms = [form for form in grammar.find(tokens) if form.uses]
+        for token, link in words_outside(forms, tokens, lexicon):
             if link.item not in words:
                 words[link.item] = lexicon.unresolved(token)
                 unresolved.add(link.item)
             occurrences.append(
-                Occurrence(pid, link.item, link.spelling, link.phonetic, token.start, token.end)
+                Occurrence(pid, link.item, link.spelling, link.phonetic, token.start, token.end, 1)
             )
+        occurrences += grammar_occurrences(pid, text, forms)
     meta = {
         "built": datetime.now(UTC).isoformat(timespec="seconds"),
         "analyser": "fugashi + unidic-lite",
         "dictionary": "JMdict_e",
     }
-    write_pack(PACK, meta, [TATOEBA], words.values(), passages.values(), occurrences)
+    write_pack(PACK, meta, [TATOEBA], words.values(), uses, passages.values(), occurrences)
     report(words, unresolved, len(passages), occurrences)
     print(f"written {PACK}")
 
     failures = check_links(analyser, lexicon, CONTENT / "link-checks.tsv")
+    failures += grammar_rules.check()
     for failure in failures:
-        print(f"link check failed: {failure}")
+        print(f"check failed: {failure}")
     if failures:
         raise SystemExit(1)
+
+
+def words_outside(
+    forms: Iterable[Found], tokens: Sequence[Token], lexicon: Lexicon
+) -> Iterator[tuple[Token, Link]]:
+    """Each word with its link, less those that are part of a grammar form (こと and できる in
+    ことができる). A word a form only frames stays a word (待つ in お待ちになる)."""
+    taken = [(tokens[i].start, tokens[i].end) for f in forms for i in f.tokens if i not in f.words]
+    for token, entry in lexicon.words(tokens):
+        if not any(start < token.end and token.start < end for start, end in taken):
+            yield token, lexicon.link(token, entry)
+
+
+def grammar_occurrences(passage: str, text: str, forms: Iterable[Found]) -> Iterator[Occurrence]:
+    for form in forms:
+        # Until the model pass measures how often each use is meant, a form's uses share it.
+        share = 1 / len(form.uses)
+        spelling = text[form.start : form.end]
+        for use in form.uses:
+            yield Occurrence(passage, use, spelling, True, form.start, form.end, share)
 
 
 def report(
     words: dict[str, Word], unresolved: set[str], passages: int, occurrences: list[Occurrence]
 ) -> None:
-    linked = sum(o.item not in unresolved for o in occurrences)
-    print(f"{passages} passages, {len(occurrences)} word occurrences")
-    print(f"linked to JMdict: {linked / len(occurrences):.1%}")
+    in_words = [o for o in occurrences if o.item in words]
+    linked = sum(o.item not in unresolved for o in in_words)
+    print(f"{passages} passages, {len(in_words)} word occurrences")
+    print(f"linked to JMdict: {linked / len(in_words):.1%}")
+    print(f"grammar occurrences: {len(occurrences) - len(in_words)}")
 
-    passages_per_item = Counter(item for _, item in {(o.passage, o.item) for o in occurrences})
+    passages_per_item = Counter(item for _, item in {(o.passage, o.item) for o in in_words})
     ranked = [item for item, _ in passages_per_item.most_common()]
 
     top_unresolved = [item for item in ranked if item in unresolved][:UNRESOLVED_SHOWN]

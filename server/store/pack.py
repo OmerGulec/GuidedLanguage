@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 
-from core.pack import Column, Occurrence, Pack, Passage, Source, Word
+from core.pack import Column, GrammarUse, Occurrence, Pack, Passage, Source, Word
 
 SCHEMA = """
 CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL);
@@ -21,9 +21,11 @@ CREATE TABLE passages (
     id TEXT PRIMARY KEY, source TEXT NOT NULL REFERENCES sources,
     position INTEGER NOT NULL, text TEXT NOT NULL
 );
+CREATE TABLE grammar (id TEXT PRIMARY KEY, nuance INTEGER NOT NULL);
 CREATE TABLE occurrences (
     passage TEXT NOT NULL REFERENCES passages, item TEXT NOT NULL, spelling TEXT NOT NULL,
-    phonetic INTEGER NOT NULL, start INTEGER NOT NULL, end INTEGER NOT NULL
+    phonetic INTEGER NOT NULL, start INTEGER NOT NULL, end INTEGER NOT NULL,
+    probability REAL NOT NULL
 );
 CREATE INDEX occurrences_by_item ON occurrences (item);
 """
@@ -34,6 +36,7 @@ def write_pack(
     meta: Mapping[str, str],
     sources: Iterable[Source],
     words: Iterable[Word],
+    grammar: Iterable[GrammarUse],
     passages: Iterable[Passage],
     occurrences: Iterable[Occurrence],
 ) -> None:
@@ -53,19 +56,23 @@ def write_pack(
                 for w in words
             ),
         )
+        db.executemany("INSERT INTO grammar VALUES (?, ?)", ((g.id, g.nuance) for g in grammar))
         db.executemany(
             "INSERT INTO passages VALUES (?, ?, ?, ?)",
             ((p.id, p.source, p.position, p.text) for p in passages),
         )
         db.executemany(
-            "INSERT INTO occurrences VALUES (?, ?, ?, ?, ?, ?)",
-            ((o.passage, o.item, o.spelling, o.phonetic, o.start, o.end) for o in occurrences),
+            "INSERT INTO occurrences VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (
+                (o.passage, o.item, o.spelling, o.phonetic, o.start, o.end, o.probability)
+                for o in occurrences
+            ),
         )
     db.close()
 
 
 def sample_pack(source: Path, target: Path, every: int) -> None:
-    """Copy every n-th passage of a pack, with its occurrences and the words they use."""
+    """Copy every n-th passage of a pack, with its occurrences and the items they use."""
     target.unlink(missing_ok=True)
     with closing(sqlite3.connect(target)) as db:
         db.executescript(SCHEMA)
@@ -78,6 +85,7 @@ def sample_pack(source: Path, target: Path, every: int) -> None:
                 WHERE passage IN (SELECT id FROM passages);
             INSERT INTO words SELECT * FROM source.words
                 WHERE id IN (SELECT item FROM occurrences);
+            INSERT INTO grammar SELECT * FROM source.grammar;
         """)
         db.commit()
         db.execute("DETACH DATABASE source")
@@ -110,16 +118,17 @@ def read_pack(path: Path) -> Pack:
         sources = [row[0] for row in db.execute("SELECT id FROM sources ORDER BY id")]
         passages = db.execute("SELECT id, source FROM passages ORDER BY rowid").fetchall()
         appearances = db.execute(
-            "SELECT DISTINCT passage, item, CASE WHEN phonetic THEN NULL ELSE spelling END"
-            " FROM occurrences"
+            "SELECT passage, item, CASE WHEN phonetic THEN NULL ELSE spelling END AS written,"
+            " MAX(probability) FROM occurrences GROUP BY passage, item, written"
         ).fetchall()
+        grammar = db.execute("SELECT id, nuance FROM grammar").fetchall()
 
     source_index = {source: i for i, source in enumerate(sources)}
     passage_index = {passage: i for i, (passage, _) in enumerate(passages)}
     column_index: dict[Column, int] = {}
     appearance_columns = [
         column_index.setdefault(Column(item, spelling), len(column_index))
-        for _, item, spelling in appearances
+        for _, item, spelling, _ in appearances
     ]
 
     return Pack(
@@ -128,9 +137,12 @@ def read_pack(path: Path) -> Pack:
         passage_sources=np.array([source_index[source] for _, source in passages], dtype=np.int32),
         columns=tuple(column_index),
         appearance_passages=np.array(
-            [passage_index[passage] for passage, _, _ in appearances], dtype=np.int32
+            [passage_index[passage] for passage, _, _, _ in appearances], dtype=np.int32
         ),
         appearance_columns=np.array(appearance_columns, dtype=np.int32),
+        appearance_probabilities=np.array([p for *_, p in appearances], dtype=np.float64),
+        grammar=frozenset(use for use, _ in grammar),
+        nuance=frozenset(use for use, nuance in grammar if nuance),
     )
 
 

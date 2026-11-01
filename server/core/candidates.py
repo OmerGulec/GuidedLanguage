@@ -16,20 +16,22 @@ class Ranking:
 
 
 def ranking(pack: Pack) -> Ranking:
-    items = sorted({column.item for column in pack.columns})
+    """Words by the passages they appear in. Grammar is ranked through its graph (009)."""
+    items = sorted({column.item for column in pack.columns} - pack.grammar)
     index = {item: i for i, item in enumerate(items)}
-    item_of_column = np.array([index[column.item] for column in pack.columns], dtype=np.int64)
+    item_of_column = np.array([index.get(c.item, -1) for c in pack.columns], dtype=np.int64)
+    of_words = item_of_column[pack.appearance_columns] >= 0
+    columns, passages = pack.appearance_columns[of_words], pack.appearance_passages[of_words]
 
     # One count per passage that contains the item, whichever spellings it appears in.
-    pairs = pack.appearance_passages.astype(np.int64) * len(items)
-    pairs += item_of_column[pack.appearance_columns]
+    pairs = passages.astype(np.int64) * len(items) + item_of_column[columns]
     counts = np.bincount(np.unique(pairs) % len(items), minlength=len(items))
 
-    per_column = np.bincount(pack.appearance_columns, minlength=len(pack.columns))
+    per_column = np.bincount(columns, minlength=len(pack.columns))
     spellings: dict[str, str | None] = {}
     best: dict[str, int] = {}
     for column, count in zip(pack.columns, per_column.tolist(), strict=True):
-        if count > best.get(column.item, -1):
+        if column.item in index and count > best.get(column.item, -1):
             best[column.item], spellings[column.item] = count, column.spelling
 
     frequency = {item: int(n) for item, n in zip(items, counts.tolist(), strict=True) if n}

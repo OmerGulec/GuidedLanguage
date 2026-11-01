@@ -81,3 +81,13 @@ def test_starting_memories_fall_due_spread_over_the_set_period() -> None:
     assert all(shortest <= due < longest for due in dues)
     assert len(set(dues)) > 150
     assert dues == [starting(f"w:{n}", mark, TOKYO).memory.due - mark.at for n in range(200)]
+
+
+def test_grammar_is_understood_by_ear_and_eye_through_its_sentence_card_and_nuance_always() -> None:
+    topic, ne = "wa.topic", "ne"
+    pack = pack_of((Column(topic, None), Column(ne, None)), grammar={topic, ne}, nuance={ne})
+    for modality in ("reading", "listening"):
+        assert unknown_counts([], pack, modality) == [1.0]
+        assert unknown_counts([passed(Card((topic,), None, "recognize"))], pack, modality) == [1.0]
+        assert unknown_counts([passed(Card((topic,), None, "sentence"))], pack, modality) == [0.0]
+        assert unknown_counts([marked(topic, "known")], pack, modality) == [0.0]
