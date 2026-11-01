@@ -98,8 +98,8 @@ def _header_problems(lesson: Lesson, lessons: dict[str, Lesson]) -> list[str]:
         problems.append("a form with no uses")
     if header.kind == "form" and header.written is None:
         problems.append("a form needs `written`")
-    if header.kind == "use" and header.key is None:
-        problems.append("a use needs `key`")
+    if header.kind != "form" and header.key is None:
+        problems.append("an item needs `key`")
     if header.kind == "use" and header.form is None and header.written is None:
         problems.append("a use without a form needs `written`")
     if header.form is not None and (form is None or form.header.kind != "form"):

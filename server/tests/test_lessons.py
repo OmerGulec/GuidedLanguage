@@ -21,7 +21,7 @@ def problems(folder: Path, seed_order: list[str]) -> list[str]:
 
 
 def te_iru(folder: Path) -> None:
-    write(folder, "te-ta", kind="formation", name="te-form")
+    write(folder, "te-ta", kind="formation", name="te-form", key="k")
     write(folder, "teiru", kind="form", name="te-iru", written="ている")
     write(
         folder, "teiru.ongoing", kind="use", name="ongoing", form="teiru", key="k", after=["te-ta"]
@@ -93,5 +93,5 @@ def test_headers_missing_what_their_kind_needs_are_reported(tmp_path: Path) -> N
         "state: replaced te-oku still exists",
         "te-oku: a form with no uses",
         "teiru: a form needs `written`",
-        "teiru.ongoing: a use needs `key`",
+        "teiru.ongoing: an item needs `key`",
     ]
