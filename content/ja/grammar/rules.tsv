@@ -18,6 +18,17 @@
 と:格助詞 (いう:動詞)	to.quote toiu.called toiu.content
 と:接続助詞	to-conditional.whenever to-conditional.discovery
 と:格助詞 か:副助詞	toka
+# Question words with も or か are words: 誰も, 何か, いつも, どこか.
+(何|誰|いつ|どこ|どれ|どちら:代名詞) も:係助詞
+(何|誰|いつ|どこ|どれ|どちら:代名詞) か:副助詞
+(どう:副詞) に:格助詞 か:副助詞
+# なんで, why, is a word; と after an adverb (ぐるぐると) makes the adverb.
+(何:代名詞) で:格助詞
+(*:副詞) と:格助詞
+と:格助詞 する:動詞 て:接続助詞	toshite
+と:格助詞 する:動詞 て:接続助詞 も:係助詞	toshite
+と:格助詞 は:係助詞 かぎる:動詞 ない:助動詞	to-wa-kagiranai
+と:格助詞 は:係助詞 かぎる:動詞 ます:助動詞 ず:助動詞	to-wa-kagiranai
 # 何とか, somehow, is a word.
 (何:代名詞) と:格助詞 か:副助詞
 や:副助詞	ya
@@ -28,6 +39,7 @@
 の:準体助詞 だ:助動詞:連用形-一般	node
 の:準体助詞 だ:助動詞	nda
 の:準体助詞 です:助動詞	nda
+の:準体助詞 (よ|ね|か:終助詞)	nda
 の:準体助詞 に:格助詞	noni.despite noni.purpose
 も:係助詞	mo.also mo.even
 # UniDic tags an embedded か as either particle; before punctuation it is a question.
@@ -81,6 +93,7 @@
 (*:形容詞:連用形) ない:形容詞	nai
 だ:助動詞:連用形-融合 ない:形容詞	nai janai
 で:格助詞 は:係助詞 ない:形容詞	nai janai
+だ:助動詞:連用形 は:係助詞 ない:形容詞	nai janai
 だ:助動詞:連用形-融合 ない:形容詞 か:終助詞	janai
 で:格助詞 は:係助詞 ない:形容詞 か:終助詞	janai
 の:準体助詞 で:格助詞 は:係助詞 ない:形容詞	janai
@@ -136,6 +149,7 @@
 てく:助動詞	te-iku.away te-iku.change
 て:接続助詞 くる:動詞	te-kuru.toward te-kuru.change
 て:接続助詞 あげる:動詞	te-ageru
+て:接続助詞 やる:動詞	te-ageru
 て:接続助詞 くれる:動詞	te-kureru
 て:接続助詞 もらう:動詞	te-morau
 て:接続助詞 ほしい:形容詞	te-hoshii
@@ -144,6 +158,7 @@
 て:接続助詞 も:係助詞 よい:形容詞	temo-ii
 て:接続助詞 は:係助詞 いく:動詞:下一段 ない:助動詞	te-wa-ikenai
 て:接続助詞 いく:動詞:下一段 ない:助動詞	te-wa-ikenai
+て:接続助詞 は:係助詞 いく:動詞:下一段 ます:助動詞 ず:助動詞	te-wa-ikenai
 て:接続助詞 は:係助詞 だめ:名詞	te-wa-ikenai
 て:接続助詞 だめ:名詞	te-wa-ikenai
 ない:助動詞:終止形 て:接続助詞	naide
@@ -212,5 +227,5 @@
 に:格助詞 =つく:動詞 て:接続助詞	ni-tsuite
 に:格助詞 =因る:動詞 と:接続助詞	ni-yoru-to
 に:格助詞 =因る:動詞 て:接続助詞	ni-yotte.means ni-yotte.varies
-に:格助詞 =因る:動詞:連体形	ni-yotte.means ni-yotte.varies
+に:格助詞 =因る:動詞	ni-yotte.means ni-yotte.varies
 に:格助詞 =取る:動詞 て:接続助詞	ni-totte

@@ -215,6 +215,7 @@ ni-yoru-to
 ni-yotte.means
 ni-yotte.varies
 ni-totte
+toshite
 
 # Amounts and limits
 zutsu
@@ -233,3 +234,4 @@ wake.reason
 wake.not
 nante
 sae
+to-wa-kagiranai
