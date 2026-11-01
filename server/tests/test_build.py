@@ -47,8 +47,10 @@ def test_a_form_splits_between_its_uses_by_measured_shares_or_evenly(
     text = "猫が好き。"
     forms = [form for form in grammar.find(analyser.tokens(text)) if form.uses]
 
-    def found(weights: dict[str, float]) -> list[tuple[str, str, float]]:
-        occurrences = grammar_occurrences("p", text, forms, weights)
+    def found(
+        weights: dict[str, float], labels: dict[tuple[str, int], str] | None = None
+    ) -> list[tuple[str, str, float]]:
+        occurrences = grammar_occurrences("p", text, forms, weights, labels or {})
         return [(o.item, o.spelling, o.probability) for o in occurrences]
 
     assert found({}) == [("ga.subject", "が", 0.5), ("ga.object", "が", 0.5)]
@@ -56,6 +58,9 @@ def test_a_form_splits_between_its_uses_by_measured_shares_or_evenly(
         ("ga.subject", "が", 0.75),
         ("ga.object", "が", 0.25),
     ]
+    assert found({}, {("p", 1): "ga.object"}) == [("ga.object", "が", 1.0)]
+    assert found({}, {("p", 1): "wa.topic"}) == found({})
+    assert found({}, {("q", 1): "ga.object"}) == found({})
 
 
 def test_each_sentence_takes_its_oldest_translation() -> None:

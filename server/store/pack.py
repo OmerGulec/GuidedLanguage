@@ -184,6 +184,26 @@ def read_passages(path: Path) -> list[Passage]:
         return [Passage(id, source, position, text) for id, source, position, text in rows]
 
 
+@dataclass(frozen=True, slots=True)
+class UnsettledForm:
+    """A form in a passage that may have more than one use: what a label settles (006)."""
+
+    passage: str
+    start: int
+    end: int
+    uses: tuple[str, ...]
+
+
+def read_unsettled_forms(path: Path) -> list[UnsettledForm]:
+    with closing(sqlite3.connect(path)) as db:
+        rows = db.execute(
+            "SELECT passage, start, end, group_concat(item, ' ') FROM occurrences"
+            " WHERE item IN (SELECT id FROM grammar)"
+            " GROUP BY passage, start, end HAVING COUNT(*) > 1 ORDER BY passage, start"
+        ).fetchall()
+    return [UnsettledForm(p, s, e, tuple(sorted(uses.split()))) for p, s, e, uses in rows]
+
+
 def read_eligible(path: Path) -> NDArray[np.bool_]:
     """Per passage, in the pack's order: whether the app may show it, being translated and
     allowed by its source's display policy (011)."""

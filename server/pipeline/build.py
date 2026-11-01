@@ -11,6 +11,7 @@ from langs.ja.checks import check_links
 from langs.ja.dictionary import read_jmdict
 from langs.ja.grammar import Found, Grammar, read_rules
 from pipeline import grammar as grammar_rules
+from pipeline.labels import SAMPLES, Place, read_agreed
 from pipeline.lessons import GRAMMAR, Lesson, read_lessons
 from pipeline.splits import SPLITS, read_splits, split
 from store.pack import Page, write_pack, write_texts
@@ -71,6 +72,7 @@ def build() -> None:
     analyser = Analyser()
     grammar = Grammar(read_rules(grammar_rules.RULES))
     weights = read_splits(SPLITS)
+    labels = read_agreed(SAMPLES)
     lessons = read_lessons(GRAMMAR).values()
     graph = [
         GrammarItem(i.id, i.header.kind, tuple(i.prerequisites), i.header.nuance)
@@ -95,7 +97,7 @@ def build() -> None:
             occurrences.append(
                 Occurrence(pid, link.item, link.spelling, link.phonetic, token.start, token.end, 1)
             )
-        occurrences += grammar_occurrences(pid, text, forms, weights)
+        occurrences += grammar_occurrences(pid, text, forms, weights, labels)
     meta = {
         "built": datetime.now(UTC).isoformat(timespec="seconds"),
         "analyser": "fugashi + unidic-lite",
@@ -136,13 +138,20 @@ def words_outside(
 
 
 def grammar_occurrences(
-    passage: str, text: str, forms: Iterable[Found], weights: Mapping[str, float]
+    passage: str,
+    text: str,
+    forms: Iterable[Found],
+    weights: Mapping[str, float],
+    labels: Mapping[Place, str],
 ) -> Iterator[Occurrence]:
-    """Each use a form may have, with its probability. Until the model pass labels every
-    passage, a form splits by the shares measured on a sample (006)."""
+    """Each use a form may have, with its probability: its label's use where two models agree,
+    and elsewhere, until the model pass labels every passage, the shares measured on a sample
+    (006)."""
     for form in forms:
         spelling = text[form.start : form.end]
-        for use, share in split(form.uses, weights).items():
+        label = labels.get((passage, form.start))
+        uses = {label: 1.0} if label in form.uses else split(form.uses, weights)
+        for use, share in uses.items():
             yield Occurrence(passage, use, spelling, True, form.start, form.end, share)
 
 
