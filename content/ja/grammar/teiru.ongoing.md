@@ -18,7 +18,7 @@ The て form of the verb, then いる: 読む → 読んで → 読んでいる.
 
 **The dictionary form.** 読む alone does not mean "is reading". For an action verb it means the act in general or one still to come: 毎日本を読む, (I) read every day; 明日読む, (I) will read it tomorrow. "Is reading" needs ている.
 
-**A resulting state** (next). With verbs of a change that is over in a moment, ている usually gives the state after the change, not a change in progress: 壊れている is "is broken", not "is breaking".
+**A resulting state** (next). With verbs that name a change ending in a new state, ている usually gives that state, not a change in progress: 壊れている is "is broken", not "is breaking".
 
 **"Have been doing".** Where English says "have been waiting", Japanese still uses ている: ２時間待っている, (I) have been waiting for two hours.
 
@@ -32,5 +32,11 @@ The て form of the verb, then いる: 読む → 読んで → 読んでいる.
 ## Notes
 
 1. On its own, いる means "to be there" and is said of people and animals. After a て form it is said of anything: 雨が降っている, it is raining.
-2. Japanese grammars call this いる a subsidiary verb (補助動詞) and this use the progressive (進行).
-3. 住んでいる, lives (somewhere), is placed by some textbooks with this use and by others with the resulting state. It reads the same either way.
+2. Grammars call this いる a supplementary verb (補助動詞), and this use the progressive form (進行形).
+3. 住んでいる, lives (somewhere), is placed by some references with this use and by others with the resulting state. It reads the same either way.
+
+## Further reading
+
+- Tae Kim, [Using ～ている for enduring states](https://guidetojapanese.org/learn/grammar/teform)
+- Tofugu, [Japanese Verb Continuous Form ている](https://www.tofugu.com/japanese-grammar/verb-continuous-form-teiru/)
+- Imabi, [The Progressive/Continuative State: ～ている](https://imabi.org/the-progressive-continued-state-te-iru-%ef%bd%9e%e3%81%a6%e3%81%84%e3%82%8b/)
