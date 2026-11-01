@@ -55,6 +55,8 @@ def test_reading_separates_words_that_share_a_spelling(lexicon: Lexicon) -> None
             surface_reading=reading,
             part_of_speech="代名詞",
             subtype="*",
+            conjugation="*",
+            inflection="*",
             start=0,
             end=1,
         )

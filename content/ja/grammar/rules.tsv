@@ -1,0 +1,216 @@
+# Grammar rules over the analyser's tokens: pattern, then the uses its form may have.
+# Syntax and precedence are described in server/langs/ja/grammar.py. Values are UniDic lemmas
+# or their readings: いい is 良い, read よい; いける is 行く in a 下一段 conjugation.
+
+# Particles
+は:係助詞	wa.topic wa.contrast
+が:格助詞	ga.subject ga.object
+が:接続助詞	ga-but
+を:格助詞	o.object o.motion
+に:格助詞	ni.time ni.goal ni.place ni.target ni.purpose ni.result ni.agent ni.rate
+(*:動詞:連用形) に:格助詞 (いく|くる:動詞)	ni.purpose
+に:格助詞 (なる:動詞)	ni.result
+へ:格助詞	e
+# UniDic reads the copula's て form after a noun (学生で、) as the particle.
+で:格助詞	de.place de.means de.cause de.scope da
+と:格助詞	to.and to.with to.quote
+と:格助詞 (おもう|かんがえる:動詞)	to.quote
+と:格助詞 (いう:動詞)	to.quote toiu.called toiu.content
+と:接続助詞	to-conditional.whenever to-conditional.discovery
+と:格助詞 か:副助詞	toka
+や:副助詞	ya
+など:副助詞	nado
+の:格助詞	no.link relative.no-as-subject
+の:準体助詞	no.one no.nominalizer
+の:終助詞	nda
+の:準体助詞 だ:助動詞:連用形-一般	node
+の:準体助詞 だ:助動詞	nda
+の:準体助詞 です:助動詞	nda
+の:準体助詞 に:格助詞	noni.despite noni.purpose
+も:係助詞	mo.also mo.even
+# UniDic tags an embedded か as either particle; before punctuation it is a question.
+か:終助詞	ka.question ka.embedded
+か:終助詞 (*:補助記号)	ka.question
+か:副助詞	ka.or ka.embedded
+か:副助詞 どう:副詞 か:副助詞	ka-dou-ka
+か:終助詞 な:終助詞	kana
+かしら:終助詞	kana
+か:副助詞 も:係助詞 しれる:動詞	kamoshirenai
+から:格助詞	kara.from
+から:接続助詞	kara.because
+まで:副助詞	made
+まで:副助詞 に:格助詞	made-ni
+だけ:副助詞	dake
+しか:副助詞	shika
+より:格助詞	yori
+の:格助詞 ほう:名詞 が:格助詞	hou-ga
+(た|ない:助動詞) ほう:名詞 が:格助詞 よい:形容詞	hou-ga-ii
+(*:動詞) ほう:名詞 が:格助詞 よい:形容詞	hou-ga-ii
+ほど:副助詞	hodo
+くらい:副助詞	kurai
+ずつ:副助詞	zutsu
+さえ:副助詞	sae
+なんて:副助詞	nante
+ばかり:副助詞	bakari.only bakari.just-done
+た:助動詞 ばかり:副助詞	bakari.just-done
+って:副助詞	tte.quote tte.topic
+って:副助詞 (いう:動詞)	tte.quote
+し:接続助詞	shi
+ながら:接続助詞	nagara
+たり:副助詞	tari
+けれど:接続助詞	kedo
+ね:終助詞	ne
+よ:終助詞	yo
+な:終助詞	na-final
+(*:動詞:終止形) な:終助詞	na-prohibition
+
+# The copula and the negative
+だ:助動詞	da
+# な joining a na-adjective to its noun belongs to the adjective classes.
+だ:助動詞:連体形
+だ:助動詞:連用形-ニ	adverbial
+(この|その|あの|どの:連体詞) よう:形状詞 だ:助動詞:連用形-ニ
+だ:助動詞:仮定形	nara
+だ:助動詞:意志推量形	darou.guess darou.confirm
+です:助動詞:意志推量形	darou.guess darou.confirm
+です:助動詞	desu
+ない:助動詞	nai
+ず:助動詞	nai
+(*:形容詞:連用形) ない:形容詞	nai
+だ:助動詞:連用形-融合 ない:形容詞	nai janai
+で:格助詞 は:係助詞 ない:形容詞	nai janai
+だ:助動詞:連用形-融合 ない:形容詞 か:終助詞	janai
+で:格助詞 は:係助詞 ない:形容詞 か:終助詞	janai
+の:準体助詞 で:格助詞 は:係助詞 ない:形容詞	janai
+だ:助動詞:連用形-融合 ある:動詞 ます:助動詞 ず:助動詞	nai
+で:格助詞 は:係助詞 ある:動詞 ます:助動詞 ず:助動詞	nai
+
+# Verb endings
+た:助動詞	ta
+た:助動詞:仮定形	tara.if tara.discovery
+た:助動詞:仮定形 どう:副詞	tara-dou
+た:助動詞:仮定形 よい:形容詞	ba-ii
+ば:接続助詞	ba
+ば:接続助詞 よい:形容詞	ba-ii
+ます:助動詞	masu
+ます:助動詞:意志推量形	volitional.invite
+ます:助動詞 ず:助動詞 か:終助詞	masen-ka
+[*:動詞:意志推量形]	volitional.invite
+[*:動詞:意志推量形] と:格助詞 (おもう:動詞)	you-to-omou
+[*:動詞:意志推量形] と:格助詞 する:動詞	you-to-suru
+たい:助動詞	tai
+たがる:助動詞	tagaru
+れる:助動詞	potential passive.direct passive.suffering passive.respect
+られる:助動詞	potential passive.direct passive.suffering passive.respect
+[*:可能]	potential
+せる:助動詞	causative.make causative.let
+させる:助動詞	causative.make causative.let
+せる:助動詞 られる:助動詞	causative-passive
+させる:助動詞 られる:助動詞	causative-passive
+[*:形容詞:連用形-一般] (*:動詞)	adverbial
+(*:連用形) すぎる:動詞	sugiru
+(*:語幹) すぎる:動詞	sugiru
+やすい:接尾辞	yasui
+にくい:接尾辞	nikui
+かた:接尾辞	kata
+(*:動詞:連用形) なさる:動詞:命令形	nasai
+らしい:助動詞	rashii.apparently rashii.typical
+(*:終止形) らしい:助動詞	rashii.apparently
+べし:助動詞	beki
+
+# The て form
+て:接続助詞	te.and te.cause
+て:接続助詞 から:格助詞	te-kara
+て:接続助詞 いる:動詞	teiru.ongoing teiru.state teiru.habit
+てる:助動詞	teiru.ongoing teiru.state teiru.habit
+て:接続助詞 ある:動詞	te-aru
+て:接続助詞 おく:動詞	te-oku
+とく:助動詞	te-oku
+て:接続助詞 しまう:動詞	te-shimau.complete te-shimau.regret
+ちゃう:助動詞	te-shimau.complete te-shimau.regret
+て:接続助詞 みる:動詞	te-miru
+て:接続助詞 いく:動詞	te-iku.away te-iku.change
+てく:助動詞	te-iku.away te-iku.change
+て:接続助詞 くる:動詞	te-kuru.toward te-kuru.change
+て:接続助詞 あげる:動詞	te-ageru
+て:接続助詞 くれる:動詞	te-kureru
+て:接続助詞 もらう:動詞	te-morau
+て:接続助詞 ほしい:形容詞	te-hoshii
+て:接続助詞 くださる:動詞	te-kudasai
+て:接続助詞 も:係助詞	temo
+て:接続助詞 も:係助詞 よい:形容詞	temo-ii
+て:接続助詞 は:係助詞 いく:動詞:下一段 ない:助動詞	te-wa-ikenai
+て:接続助詞 いく:動詞:下一段 ない:助動詞	te-wa-ikenai
+て:接続助詞 は:係助詞 だめ:名詞	te-wa-ikenai
+て:接続助詞 だめ:名詞	te-wa-ikenai
+ない:助動詞:終止形 て:接続助詞	naide
+ない:助動詞:終止形 て:接続助詞 くださる:動詞	naide
+ず:助動詞 に:格助詞	naide
+ない:助動詞:連用形 て:接続助詞 も:係助詞 よい:形容詞	nakute-mo-ii
+ない:助動詞:仮定形 ば:接続助詞 なる:動詞	nakereba-naranai
+ない:助動詞:仮定形 ば:接続助詞 なる:動詞 ない:助動詞	nakereba-naranai
+ない:助動詞:仮定形 ば:接続助詞 なる:動詞 ます:助動詞 ず:助動詞	nakereba-naranai
+ない:助動詞:仮定形 ば:接続助詞 いく:動詞:下一段 ない:助動詞	nakereba-naranai
+ない:助動詞:連用形 て:接続助詞 は:係助詞 いく:動詞:下一段 ない:助動詞	nakereba-naranai
+ない:助動詞:連用形 て:接続助詞 は:係助詞 なる:動詞 ない:助動詞	nakereba-naranai
+ない:助動詞:連用形 て:接続助詞 いく:動詞:下一段 ない:助動詞	nakereba-naranai
+ない:助動詞:終止形 と:接続助詞 いく:動詞:下一段 ない:助動詞	nakereba-naranai
+ない:助動詞:仮定形-融合	nakereba-naranai
+
+# Nouns that take a clause
+(*:動詞:連体形) こと:名詞	koto
+(た|ない:助動詞:連体形) こと:名詞	koto
+た:助動詞 こと:名詞 が:格助詞 ある:動詞	ta-koto-ga-aru
+(*:動詞:連体形) こと:名詞 が:格助詞 ある:動詞	koto-ga-aru
+こと:名詞 が:格助詞 できる:動詞	koto-ga-dekiru
+こと:名詞 に:格助詞 する:動詞	koto-ni-suru
+こと:名詞 に:格助詞 なる:動詞	koto-ni-naru
+(*:連体形) とき:名詞	toki
+(の:格助詞) とき:名詞	toki
+(*:連体形) あいだ:名詞	aida.throughout aida.within
+(の:格助詞) あいだ:名詞	aida.throughout aida.within
+(*:連体形) あいだ:名詞 に:格助詞	aida.within
+(の:格助詞) あいだ:名詞 に:格助詞	aida.within
+(*:動詞:連体形) まえ:名詞 に:格助詞	mae-ni
+(た:助動詞) あと:名詞 で:格助詞	ato-de
+(た:助動詞) あと:名詞	ato-de
+まま:名詞	mama
+つもり:名詞	tsumori
+はず:名詞	hazu
+(*:連体形) わけ:名詞	wake.reason wake.not
+(*:連体形) わけ:名詞 で:格助詞 は:係助詞	wake.not
+(*:連体形) わけ:名詞 だ:助動詞:連用形-融合	wake.not
+(*:連体形) ため:名詞	tame.purpose tame.cause
+(の:格助詞) ため:名詞	tame.purpose tame.cause
+(*:連体形) ため:名詞 に:格助詞	tame.purpose tame.cause
+(の:格助詞) ため:名詞 に:格助詞	tame.purpose tame.cause
+(た:助動詞:連体形) ところ:名詞 (だ|です)	tokoro.just-done
+(いる:動詞:連体形) ところ:名詞 (だ|です)	tokoro.in-progress
+(てる:助動詞:連体形) ところ:名詞 (だ|です)	tokoro.in-progress
+(*:動詞:連体形) ところ:名詞 (だ|です)	tokoro.about-to
+
+# Seeming and hearsay
+よう:形状詞	you.seems you.like
+(の:格助詞) よう:形状詞	you.like
+(の:格助詞) よう:形状詞 だ:助動詞:連用形-ニ	you.like
+(*:連体形) よう:形状詞 だ:助動詞:連用形-ニ	youni.purpose youni.request you.like
+(*:連体形) よう:形状詞 だ:助動詞:連用形-ニ なる:動詞	you-ni-naru
+(*:連体形) よう:形状詞 だ:助動詞:連用形-ニ する:動詞	you-ni-suru
+みたい:形状詞	mitai.seems mitai.like
+そう:形状詞:助動詞語幹	souda.looks
+そう:名詞:助動詞語幹	souda.hearsay
+
+# Respect
+お:接頭辞 [*:動詞:連用形] に:格助詞 なる:動詞	o-ni-naru
+ご:接頭辞 [*:名詞] に:格助詞 なる:動詞	o-ni-naru
+お:接頭辞 [*:動詞:連用形] する:動詞	o-suru
+ご:接頭辞 [*:名詞] する:動詞	o-suru
+お:接頭辞 [*:動詞:連用形] くださる:動詞	o-kudasai
+ご:接頭辞 [*:名詞] くださる:動詞	o-kudasai
+
+# Phrases after nouns: lemmas alone, since に着いて and に寄って read the same.
+に:格助詞 =つく:動詞 て:接続助詞	ni-tsuite
+に:格助詞 =因る:動詞 と:接続助詞	ni-yoru-to
+に:格助詞 =因る:動詞 て:接続助詞	ni-yotte.means ni-yotte.varies
+に:格助詞 =因る:動詞:連体形	ni-yotte.means ni-yotte.varies
+に:格助詞 =取る:動詞 て:接続助詞	ni-totte

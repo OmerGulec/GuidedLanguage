@@ -99,6 +99,12 @@ def read_words(path: Path) -> list[Word]:
     ]
 
 
+def read_passages(path: Path) -> list[Passage]:
+    with closing(sqlite3.connect(path)) as db:
+        rows = db.execute("SELECT id, source, position, text FROM passages ORDER BY rowid")
+        return [Passage(id, source, position, text) for id, source, position, text in rows]
+
+
 def read_pack(path: Path) -> Pack:
     with closing(sqlite3.connect(path)) as db:
         sources = [row[0] for row in db.execute("SELECT id FROM sources ORDER BY id")]

@@ -1,0 +1,152 @@
+# Grammar the rules must find: sentence, the form's text, its possible uses (- for none).
+私は学生だ。	は	wa.topic wa.contrast
+猫が好き。	が	ga.subject ga.object
+高いですが、買います。	が	ga-but
+本を読んでいる。	でいる	teiru.ongoing teiru.state teiru.habit
+食べてる。	てる	teiru.ongoing teiru.state teiru.habit
+雨なので行かない。	ので	node
+雨なので行かない。	な	-
+静かな部屋で静かに話す。	な	-
+静かな部屋で静かに話す。	に	adverbial
+早く起きる。	早く	adverbial
+約束したのに来なかった。	のに	noni.despite noni.purpose
+来るかな。	かな	kana
+学生じゃない。	じゃない	nai janai
+高くない。	ない	nai
+いいじゃないか。	じゃないか	janai
+食べないで寝た。	ないで	naide
+分からなくて困った。	て	te.and te.cause
+降らずに。	ずに	naide
+行かなきゃ。	なきゃ	nakereba-naranai
+行かなければならない。	なければならない	nakereba-naranai
+行かなくちゃいけない。	なくちゃいけない	nakereba-naranai
+行かないといけない。	ないといけない	nakereba-naranai
+入っちゃだめ。	ちゃだめ	te-wa-ikenai
+入ってはいけない。	てはいけない	te-wa-ikenai
+行かなくてもいい。	なくてもいい	nakute-mo-ii
+入ってもいい。	てもいい	temo-ii
+雨が降っても行く。	ても	temo
+忘れちゃった。	ちゃっ	te-shimau.complete te-shimau.regret
+置いとく。	とく	te-oku
+雨が降るそうだ。	そう	souda.hearsay
+雨が降りそうだ。	そう	souda.looks
+そうです。	そう	-
+結婚したらしい。	らしい	rashii.apparently
+本を読んだことがある。	だことがある	ta-koto-ga-aru
+遅れることがある。	ことがある	koto-ga-aru
+泳ぐことができる。	ことができる	koto-ga-dekiru
+話すことは難しい。	こと	koto
+大切なことを忘れた。	こと	-
+雨が降るかもしれません。	かもしれ	kamoshirenai
+日本について話す。	について	ni-tsuite
+駅に着いて電話した。	に	ni.time ni.goal ni.place ni.target ni.purpose ni.result ni.agent ni.rate
+天気予報によると雨だ。	によると	ni-yoru-to
+人によって違う。	によって	ni-yotte.means ni-yotte.varies
+私にとって大切だ。	にとって	ni-totte
+田中という人。	と	to.quote toiu.called toiu.content
+高いと思う。	と	to.quote
+来るかどうか分からない。	かどうか	ka-dou-ka
+何を買うか決めた。	か	ka.question ka.embedded
+学生ですか。	か	ka.question
+月曜か火曜。	か	ka.or ka.embedded
+行こうと思う。	行こうと	you-to-omou
+寝ようとした。	寝ようとし	you-to-suru
+行こう。	行こう	volitional.invite
+食べましょう。	ましょう	volitional.invite
+行きませんか。	ませんか	masen-ka
+食べさせる。	させる	causative.make causative.let
+食べさせられた。	させられ	causative-passive
+褒められた。	られ	potential passive.direct passive.suffering passive.respect
+読める。	読める	potential
+パンを食べる。	食べる	-
+お待ちになる。	お待ちになる	o-ni-naru
+ご案内します。	ご案内し	o-suru
+お待ちください。	お待ちください	o-kudasai
+お茶をください。	ください	-
+寝る前に。	前に	mae-ni
+食べた後で。	後で	ato-de
+行く時。	時	toki
+子供の時。	時	toki
+その時。	時	-
+五時までに。	までに	made-ni
+留守の間に。	間に	aida.within
+遊びに来た。	に	ni.purpose
+医者になる。	に	ni.result
+教えてあげる。	てあげる	te-ageru
+教えてくれた。	てくれ	te-kureru
+教えてもらった。	てもらっ	te-morau
+来てほしい。	てほしい	te-hoshii
+食べてみる。	てみる	te-miru
+持っていく。	ていく	te-iku.away te-iku.change
+寒くなってきた。	てき	te-kuru.toward te-kuru.change
+窓が開けてある。	てある	te-aru
+待ってください。	てください	te-kudasai
+食べてから行く。	てから	te-kara
+行きたがる。	たがる	tagaru
+行きたい。	たい	tai
+開けたまま。	まま	mama
+買うために働く。	ために	tame.purpose tame.cause
+事故のため。	ため	tame.purpose tame.cause
+降ったようだ。	よう	you.seems you.like
+夢のような話。	よう	you.like
+聞こえるように話す。	ように	youni.purpose youni.request you.like
+泳げるようになった。	ようになっ	you-ni-naru
+毎日歩くようにしている。	ようにし	you-ni-suru
+どのように作るの？	ように	-
+子供みたい。	みたい	mitai.seems mitai.like
+来るはずだ。	はず	hazu
+寒いわけだ。	わけ	wake.reason wake.not
+嫌いなわけではない。	わけでは	wake.not
+行くつもり。	つもり	tsumori
+出るところだ。	ところ	tokoro.about-to
+着いたところです。	ところ	tokoro.just-done
+食べているところだ。	ところ	tokoro.in-progress
+静かなところに住む。	ところ	-
+買ったばかり。	たばかり	bakari.just-done
+遊んでばかりいる。	ばかり	bakari.only bakari.just-done
+犬とか猫とか。	とか	toka
+来るかしら。	かしら	kana
+行くべきだ。	べき	beki
+猫のほうが好き。	のほうが	hou-ga
+休んだほうがいい。	ほうがいい	hou-ga-ii
+安ければ買う。	ば	ba
+行けばよかった。	ばよかっ	ba-ii
+どうしたらいい。	たらいい	ba-ii
+休んだらどう。	だらどう	tara-dou
+着いたら電話する。	たら	tara.if tara.discovery
+春になると暖かい。	と	to-conditional.whenever to-conditional.discovery
+行くなら傘を持って。	なら	nara
+行くって言った。	って	tte.quote
+日本語って難しい。	って	tte.quote tte.topic
+どうしたの？	の	nda
+頭が痛いんです。	んです	nda
+赤いのがいい。	の	no.one no.nominalizer
+友達の買った本。	の	no.link relative.no-as-subject
+明日は雨だろう。	だろう	darou.guess darou.confirm
+行くでしょう。	でしょう	darou.guess darou.confirm
+学生だった。	だっ	da
+学生です。	です	desu
+読んだり書いたりする。	たり	tari
+歩きながら話す。	ながら	nagara
+安いし、おいしい。	し	shi
+高いけど買った。	けど	kedo
+食べすぎる。	すぎる	sugiru
+高すぎる。	すぎる	sugiru
+読みやすい。	やすい	yasui
+読みにくい。	にくい	nikui
+読み方。	方	kata
+寝なさい。	なさい	nasai
+行くな。	な	na-prohibition
+いいな。	な	na-final
+一つしかない。	しか	shika
+一時間ぐらい。	ぐらい	kurai
+去年ほど寒くない。	ほど	hodo
+一つずつ。	ずつ	zutsu
+子供さえ知っている。	さえ	sae
+幽霊なんていない。	なんて	nante
+犬や猫など。	など	nado
+犬より猫が好き。	より	yori
+東京へ行く。	へ	e
+九時から五時まで。	まで	made
+雨だから行かない。	から	kara.because
+九時から五時まで。	から	kara.from

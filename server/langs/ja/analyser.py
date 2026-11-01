@@ -25,6 +25,8 @@ WORD_PARTS_OF_SPEECH: dict[str, tuple[str, ...]] = {
     "接尾辞": ("suf", "n-suf", "ctr"),
 }
 NUMBER = "数詞"
+VERB = "動詞"
+LOWER_ICHIDAN = "下一段"
 # Names and numbers never count as unknown (013), so they produce no occurrence.
 FREE_SUBTYPES = frozenset({"固有名詞", NUMBER})
 # JMdict's expressions are set phrases (その時, よくなる). Whether one is meant as a whole
@@ -35,6 +37,8 @@ SET_PHRASE = "exp"
 class _Features(Protocol):
     pos1: str
     pos2: str
+    cType: str  # noqa: N815
+    cForm: str  # noqa: N815
     lemma: str | None
     lForm: str | None  # noqa: N815
     kana: str | None
@@ -60,6 +64,9 @@ class Token:
     surface_reading: str
     part_of_speech: str
     subtype: str
+    # How the word inflects (五段-カ行, 形容詞) and the form it is in here (連用形-一般).
+    conjugation: str
+    inflection: str
     start: int
     end: int
 
@@ -74,6 +81,15 @@ class Token:
     @property
     def is_number(self) -> bool:
         return self.subtype == NUMBER
+
+    @property
+    def is_potential(self) -> bool:
+        """A godan verb's potential form, which UniDic files under the plain verb (読める, 読む)."""
+        return (
+            self.part_of_speech == VERB
+            and self.conjugation.startswith(LOWER_ICHIDAN)
+            and self.written_reading != self.reading
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -125,6 +141,8 @@ class Analyser:
                     surface_reading=hiragana(f.kana or node.surface),
                     part_of_speech=f.pos1,
                     subtype=f.pos2,
+                    conjugation=f.cType,
+                    inflection=f.cForm,
                     start=start,
                     end=position,
                 )
@@ -146,6 +164,8 @@ def _joined(tokens: Sequence[Token]) -> Token:
         surface_reading="".join(t.surface_reading for t in tokens),
         part_of_speech=last.part_of_speech,
         subtype=last.subtype,
+        conjugation=last.conjugation,
+        inflection=last.inflection,
         start=tokens[0].start,
         end=last.end,
     )
