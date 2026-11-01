@@ -6,7 +6,7 @@ from pathlib import Path
 
 from fastapi import FastAPI
 
-from api import events, session, settings, study
+from api import events, session, settings, study, today
 from api.learners import Learners
 from api.library import load_library
 from api.server import Server
@@ -27,6 +27,7 @@ def create_app(
     app.include_router(events.routes(server, signed_in))
     app.include_router(settings.routes(server, signed_in))
     app.include_router(study.routes(server, library, signed_in))
+    app.include_router(today.routes(server, library, signed_in))
     return app
 
 

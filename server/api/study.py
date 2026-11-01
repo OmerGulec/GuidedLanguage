@@ -6,6 +6,7 @@ explanation step or a listening card, is a new member that every handler must ta
 """
 
 from collections.abc import Callable
+from dataclasses import dataclass
 from typing import Annotated, Literal
 
 import numpy as np
@@ -20,6 +21,7 @@ from core.cards import Card, Goal
 from core.days import next_boundary
 from core.passages import card_passages
 from core.plan import Plan, Situation, plan
+from core.settings import Settings
 from core.state import State
 from core.unknowns import unknowns
 from core.values import values
@@ -69,24 +71,41 @@ def routes(server: Server, library: Library, signed_in: Callable[..., int]) -> A
     def next_step(
         account: Annotated[int, Depends(signed_in)], sound: bool = False, keyboard: bool = False
     ) -> Step:
-        settings = core_settings(learner_settings(server, account))
-        state = server.learners.state(account, settings)
-        now = server.clock()
-        reading = values(state, library.pack, settings, next_boundary(now, settings), "reading")
-        unknown = unknowns(reading, library.pack)
-        today = plan(
-            state,
-            {"reading": unknown},
-            library.pack,
-            library.ranking,
-            GOAL,
-            Situation(sound, keyboard),
-            settings,
-            now,
-        )
-        return _next(today, state, library, reading, unknown)
+        day = planned(server, library, account, Situation(sound, keyboard))
+        return _next(day.plan, day.state, library, day.reading, day.unknown)
 
     return router
+
+
+@dataclass(frozen=True, slots=True)
+class Day:
+    """A learner's plan now, with what it was made from."""
+
+    plan: Plan
+    state: State
+    settings: Settings
+    # Values and unknowns for reading, at the next study-day boundary (013).
+    reading: NDArray[np.float64]
+    unknown: NDArray[np.float64]
+
+
+def planned(server: Server, library: Library, account: int, situation: Situation) -> Day:
+    settings = core_settings(learner_settings(server, account))
+    state = server.learners.state(account, settings)
+    now = server.clock()
+    reading = values(state, library.pack, settings, next_boundary(now, settings), "reading")
+    unknown = unknowns(reading, library.pack)
+    today = plan(
+        state,
+        {"reading": unknown},
+        library.pack,
+        library.ranking,
+        GOAL,
+        situation,
+        settings,
+        now,
+    )
+    return Day(today, state, settings, reading, unknown)
 
 
 def _next(

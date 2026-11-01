@@ -99,3 +99,24 @@ def test_settings_are_checked_and_take_effect_at_once(client: TestClient) -> Non
     assert stored.status_code == 200
     assert client.get("/api/settings").json()["zone"] == "Europe/Istanbul"
     assert STEP.validate_python(client.get("/api/study/next").json()).kind == "done"
+
+
+def test_today_counts_what_is_left_and_what_is_done(client: TestClient) -> None:
+    budget, passages = Settings().new_budget, Settings().reading_per_day
+    fresh = client.get("/api/today").json()
+    assert (fresh["reviews"], fresh["new"], fresh["reading"]) == (0, budget, passages)
+    assert (fresh["reviewed"], fresh["met"]) == (0, 0)
+
+    for n in range(2):
+        step = STEP.validate_python(client.get("/api/study/next").json())
+        assert not isinstance(step, DoneStep)
+        when = (NOW - timedelta(minutes=5) + timedelta(seconds=n)).isoformat()
+        client.post("/api/events", json=[{"id": f"e{n}", "at": when, "payload": answer(step)}])
+
+    after = client.get("/api/today").json()
+    assert (after["reviews"], after["new"], after["reviewed"], after["met"]) == (
+        1,
+        budget - 1,
+        1,
+        1,
+    )
