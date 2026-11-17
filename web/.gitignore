@@ -1,0 +1,9 @@
+node_modules
+/.svelte-kit
+/build
+/test-results
+/screenshots
+vite.config.ts.timestamp-*
+# Generated from the API's schema by `npm run api` (011)
+/src/api/openapi.json
+/src/api/schema.d.ts

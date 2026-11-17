@@ -1,0 +1,92 @@
+/* Every visual choice of the app. Primitives read these; screens use primitives only. */
+
+@font-face {
+	font-family: 'Schola';
+	src: url('/fonts/texgyreschola-regular.otf') format('opentype');
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Schola';
+	src: url('/fonts/texgyreschola-bold.otf') format('opentype');
+	font-weight: 700;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: 'Schola';
+	src: url('/fonts/texgyreschola-italic.otf') format('opentype');
+	font-weight: 400;
+	font-style: italic;
+	font-display: swap;
+}
+
+:root {
+	--ink: #111111;
+	--paper: #ffffff;
+	/* Unknown words and the marks of a wrong answer, nothing else. */
+	--spot: #c4321c;
+	--ink-hover: #555555;
+
+	--mincho:
+		'Hiragino Mincho ProN', 'Yu Mincho', 'BIZ UDPMincho', 'Noto Serif CJK JP', 'Noto Serif JP',
+		serif;
+	--serif: 'Schola', var(--mincho);
+
+	--type-small: 0.9rem;
+	--type-body: 1rem;
+	--type-label: 1.1rem;
+	--type-lead: 1.45rem;
+	--type-title: 1.8rem;
+	--type-figure: 1.9rem;
+	--type-sentence: 2.55rem;
+	--type-word: 7.3rem;
+	--tracking-label: 0.05em;
+
+	--space-1: 0.25rem;
+	--space-2: 0.5rem;
+	--space-3: 0.75rem;
+	--space-4: 1.25rem;
+	--space-5: 2rem;
+	--space-6: 3rem;
+
+	--rule-heavy: 5px;
+	--rule: 3px;
+	--rule-light: 1.5px;
+
+	--key-height: 56px;
+	--tap-height: 44px;
+	--bar-height: 60px;
+	--page-width: 1200px;
+	--gutter: 40px;
+}
+
+/* A phone: smaller type, a narrower gutter, the places in a bar at the bottom. */
+@media (max-width: 640px) {
+	:root {
+		--type-label: 1rem;
+		--type-lead: 1.2rem;
+		--type-title: 1.45rem;
+		--type-figure: 1.55rem;
+		--type-sentence: 1.6rem;
+		--type-word: 4.5rem;
+		--rule-heavy: 4px;
+		--gutter: 20px;
+	}
+}
+
+html {
+	font-size: 112.5%;
+}
+
+body {
+	margin: 0;
+	background: var(--paper);
+	color: var(--ink);
+	font-family: var(--serif);
+	font-size: var(--type-body);
+	line-height: 1.4;
+}

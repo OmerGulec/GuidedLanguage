@@ -1,0 +1,37 @@
+{
+	"name": "guidedlanguage-web",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"imports": {
+		"#api/*": "./src/api/*",
+		"#features/*": "./src/features/*",
+		"#ui/*": "./src/ui/*"
+	},
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"prepare": "svelte-kit sync || echo ''",
+		"api": "cd ../server && uv run python -m api.schema tests/fixtures/pack.sqlite > ../web/src/api/openapi.json && cd ../web && openapi-typescript src/api/openapi.json -o src/api/schema.d.ts",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json"
+	},
+	"devDependencies": {
+		"@playwright/test": "1.63.0",
+		"@sveltejs/adapter-static": "^4.0.1",
+		"@sveltejs/kit": "^3.2.0",
+		"@sveltejs/vite-plugin-svelte": "^7.3.1",
+		"eslint": "^10.15.0",
+		"eslint-plugin-svelte": "^3.24.1",
+		"openapi-typescript": "^7.13.0",
+		"svelte": "^5.57.3",
+		"svelte-check": "^4.7.8",
+		"typescript": "^6.0.3",
+		"typescript-eslint": "^8.73.0",
+		"vite": "^8.3.8"
+	},
+	"overrides": {
+		"openapi-typescript": {
+			"typescript": "$typescript"
+		}
+	}
+}
