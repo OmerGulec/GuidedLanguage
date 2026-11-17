@@ -7,9 +7,9 @@
 
 	interface Props {
 		title: string;
-		note?: string;
+		note?: string | undefined;
 		/** Takes the place of the rule under the title. */
-		progress?: Progress;
+		progress?: Progress | undefined;
 	}
 
 	let { title, note, progress }: Props = $props();
