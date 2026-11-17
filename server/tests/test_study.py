@@ -24,6 +24,10 @@ def client(tmp_path: Path) -> TestClient:
     return client
 
 
+def next_step(client: TestClient) -> CardStep | PageStep | MeetingStep | DoneStep:
+    return STEP.validate_python(client.get("/api/study/next").json()["step"])
+
+
 def answer(step: CardStep | PageStep | MeetingStep) -> dict[str, object]:
     """What a learner who knows everything does with a step."""
     match step:
@@ -52,7 +56,7 @@ def test_a_first_session_meets_each_item_before_its_card_and_ends(client: TestCl
     steps: list[CardStep | PageStep | MeetingStep] = []
     start = NOW - timedelta(minutes=5)
     for n in range(LONGEST_SESSION):
-        step = STEP.validate_python(client.get("/api/study/next").json())
+        step = next_step(client)
         if isinstance(step, DoneStep):
             break
         steps.append(step)
@@ -95,12 +99,12 @@ def test_settings_are_checked_and_take_effect_at_once(client: TestClient) -> Non
     assert client.put("/api/settings", json={"zone": "Mars/Olympus"}).status_code == 422
     assert client.put("/api/settings", json={"new_budget": -1}).status_code == 422
     assert client.put("/api/settings", json={"colour": "red"}).status_code == 422
-    assert STEP.validate_python(client.get("/api/study/next").json()).kind == "meeting"
+    assert next_step(client).kind == "meeting"
 
     stored = client.put("/api/settings", json={"zone": "Europe/Istanbul", "new_budget": 0})
     assert stored.status_code == 200
     assert client.get("/api/settings").json()["zone"] == "Europe/Istanbul"
-    assert STEP.validate_python(client.get("/api/study/next").json()).kind == "done"
+    assert next_step(client).kind == "done"
 
 
 def test_today_counts_what_is_left_and_what_is_done(client: TestClient, tmp_path: Path) -> None:
@@ -108,9 +112,10 @@ def test_today_counts_what_is_left_and_what_is_done(client: TestClient, tmp_path
     fresh = client.get("/api/today").json()
     assert (fresh["reviews"], fresh["new"], fresh["reading"]) == (0, budget, passages)
     assert (fresh["reviewed"], fresh["met"]) == (0, 0)
+    assert client.get("/api/study/next").json()["left"] == budget
 
     for n in range(2):
-        step = STEP.validate_python(client.get("/api/study/next").json())
+        step = next_step(client)
         assert not isinstance(step, DoneStep)
         when = (NOW - timedelta(minutes=5) + timedelta(seconds=n)).isoformat()
         client.post("/api/events", json=[{"id": f"e{n}", "at": when, "payload": answer(step)}])
@@ -118,6 +123,7 @@ def test_today_counts_what_is_left_and_what_is_done(client: TestClient, tmp_path
     after = client.get("/api/today").json()
     left, done = (after["reviews"], after["new"]), (after["reviewed"], after["met"])
     assert (left, done) == ((1, budget - 1), (1, 1))
+    assert client.get("/api/study/next").json()["left"] == budget
 
     a_day_later = NOW + timedelta(days=1)
     tomorrow = TestClient(create_app(tmp_path / "users.sqlite", FIXTURE, clock=lambda: a_day_later))

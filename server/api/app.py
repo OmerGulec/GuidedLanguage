@@ -6,7 +6,7 @@ from pathlib import Path
 
 from fastapi import FastAPI
 
-from api import events, session, settings, study, today
+from api import events, session, settings, study, today, web
 from api.learners import Learners
 from api.library import load_library
 from api.server import Server
@@ -15,7 +15,11 @@ from store.database import open_database
 
 
 def create_app(
-    users: Path, pack: Path, clock: Callable[[], datetime], secure_cookies: bool = False
+    users: Path,
+    pack: Path,
+    clock: Callable[[], datetime],
+    secure_cookies: bool = False,
+    built_web: Path | None = None,
 ) -> FastAPI:
     db = open_database(users)
     server = Server(db, Learners(db), clock, secure_cookies)
@@ -28,6 +32,8 @@ def create_app(
     app.include_router(settings.routes(server, signed_in))
     app.include_router(study.routes(server, library, signed_in))
     app.include_router(today.routes(server, library, signed_in))
+    if built_web is not None:
+        app.include_router(web.routes(built_web))
     return app
 
 

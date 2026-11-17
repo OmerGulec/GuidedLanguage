@@ -64,15 +64,25 @@ class DoneStep(BaseModel):
 type Step = Annotated[CardStep | PageStep | MeetingStep | DoneStep, Field(discriminator="kind")]
 
 
+class Next(BaseModel):
+    step: Step
+    # Reviews and new items the day still holds, the one shown included.
+    left: int
+
+
 def routes(server: Server, library: Library, signed_in: Callable[..., int]) -> APIRouter:
     router = APIRouter(prefix="/api/study")
 
     @router.get("/next")
     def next_step(
         account: Annotated[int, Depends(signed_in)], sound: bool = False, keyboard: bool = False
-    ) -> Step:
+    ) -> Next:
         day = planned(server, library, account, Situation(sound, keyboard))
-        return _next(day.plan, day.state, library, day.reading, day.unknown)
+        today = day.plan
+        return Next(
+            step=_next(today, day.state, library, day.reading, day.unknown),
+            left=len(today.reviews) + len(today.reteach) + len(today.new) + len(today.later),
+        )
 
     return router
 
